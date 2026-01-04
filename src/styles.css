@@ -1,0 +1,232 @@
+/* This section defines the palette and typography for the app. */
+:root {
+  --bg-start: #0b0f1a;
+  --bg-end: #182233;
+  --panel: #141b2b;
+  --panel-border: #2a3550;
+  --text: #eef1f5;
+  --muted: #a5b1c2;
+  --accent: #1fd4a2;
+  --accent-strong: #f4b740;
+  --screen-off: #0a0d16;
+  --font-title: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+}
+
+/* This reset keeps layout sizing predictable. */
+* {
+  box-sizing: border-box;
+}
+
+/* This base styling establishes the background and default typography. */
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: var(--font-body);
+  background:
+    radial-gradient(circle at top left, rgba(31, 212, 162, 0.2), transparent 45%),
+    radial-gradient(circle at 20% 20%, rgba(244, 183, 64, 0.18), transparent 50%),
+    linear-gradient(160deg, var(--bg-start), var(--bg-end));
+}
+
+/* This container ensures the Vue app fills the viewport. */
+#app {
+  min-height: 100vh;
+}
+
+/* This wrapper controls spacing across the layout. */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* This header aligns the title and status summary. */
+.app__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* This block styles the brand title and subtitle. */
+.app__title {
+  font-family: var(--font-title);
+  font-size: clamp(2rem, 3vw, 3rem);
+  margin: 0 0 6px;
+}
+
+/* This block styles the subtitle. */
+.app__subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* This block styles the status area. */
+.app__status {
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(20, 27, 43, 0.85);
+  border: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+/* This text label sets the muted style for status captions. */
+.app__status-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* This text value emphasizes the current status. */
+.app__status-value {
+  font-size: 1.2rem;
+}
+
+/* This layout splits the screen and control columns. */
+.app__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 24px;
+}
+
+/* This panel style provides a shared card appearance. */
+.panel {
+  background: rgba(20, 27, 43, 0.95);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(5, 9, 20, 0.35);
+}
+
+/* This modifier positions the screen panel content. */
+.panel--screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+/* This canvas displays the pixel-perfect framebuffer. */
+.screen {
+  width: min(100%, 640px);
+  height: auto;
+  aspect-ratio: 64 / 32;
+  background: var(--screen-off);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  image-rendering: pixelated;
+}
+
+/* This row aligns metadata under the screen. */
+.screen__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* This column stacks control groups. */
+.panel--controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* This block styles each control group. */
+.controls__group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* This title styles headings within the control panel. */
+.controls__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-family: var(--font-title);
+}
+
+/* This paragraph style is used for helper text. */
+.controls__hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* This layout aligns control buttons. */
+.controls__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* This style defines the primary button appearance. */
+.button {
+  border: none;
+  background: var(--accent);
+  color: #08131c;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* This style handles inactive button states. */
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* This style provides a subtle hover effect. */
+.button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 25px rgba(31, 212, 162, 0.35);
+}
+
+/* This variant creates a subdued button style. */
+.button--ghost {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+}
+
+/* This input styling keeps the file picker aligned with the theme. */
+.file-input {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px dashed var(--panel-border);
+  background: rgba(10, 13, 22, 0.4);
+  color: var(--text);
+}
+
+/* This block styles the keypad mapping table. */
+.keypad {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(10, 13, 22, 0.6);
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  font-family: var(--font-body);
+  line-height: 1.4;
+}
+
+/* This rule stacks the columns on small screens. */
+@media (max-width: 900px) {
+  .app__content {
+    grid-template-columns: 1fr;
+  }
+}
