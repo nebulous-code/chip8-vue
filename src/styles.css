@@ -1,7 +1,7 @@
 /* This section defines the palette and typography for the app. */
 :root {
   --bg-start: #000000;
-  --bg-end: #00ff00;
+  --bg-end: #007700;
   --panel: #0a0a0a;
   --panel-border: rgba(0, 255, 0, 0.3);
   --text: #eef1f5;

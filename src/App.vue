@@ -77,7 +77,12 @@ Z X C V     A 0 B F
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { StubChip8Client, type Chip8Client, type Chip8KeyMask } from "./wasm/chip8Client";
+import {
+  createWasmClient,
+  StubChip8Client,
+  type Chip8Client,
+  type Chip8KeyMask,
+} from "./wasm/chip8Client";
 
 /**
  * This constant defines the CHIP-8 screen width in pixels.
@@ -93,6 +98,16 @@ const SCREEN_HEIGHT = 32;
  * This constant defines the target CPU speed for the main loop.
  */
 const CYCLES_PER_SECOND = 700;
+
+/**
+ * This constant defines the timer tick rate.
+ */
+const TIMER_HZ = 60;
+
+/**
+ * This constant defines the timer interval in milliseconds.
+ */
+const TIMER_INTERVAL_MS = 1000 / TIMER_HZ;
 
 /**
  * This ref stores the canvas element for drawing.
@@ -127,7 +142,7 @@ const soundLabel = computed(() => (soundTimerValue.value > 0 ? "Beep" : "Silent"
 /**
  * This instance represents the emulator client boundary.
  */
-const emulator: Chip8Client = new StubChip8Client();
+let emulator: Chip8Client = new StubChip8Client();
 
 /**
  * This map translates keyboard keys into CHIP-8 key indices.
@@ -172,6 +187,11 @@ let lastFrameMs = 0;
 let cpuAccumulatorMs = 0;
 
 /**
+ * This value accumulates time for 60Hz timer ticks.
+ */
+let timerAccumulatorMs = 0;
+
+/**
  * This value stores the 2D canvas context for drawing.
  */
 let canvasContext: CanvasRenderingContext2D | null = null;
@@ -180,6 +200,11 @@ let canvasContext: CanvasRenderingContext2D | null = null;
  * This value stores the reusable ImageData buffer.
  */
 let imageData: ImageData | null = null;
+
+/**
+ * This value stores the most recent ROM bytes for reloads.
+ */
+let pendingRomBytes: Uint8Array | null = null;
 
 /**
  * This function configures the canvas for 1:1 pixel rendering.
@@ -267,9 +292,16 @@ function loop(timestamp: number): void {
   const deltaMs = timestamp - lastFrameMs;
   lastFrameMs = timestamp;
   cpuAccumulatorMs += deltaMs;
+  timerAccumulatorMs += deltaMs;
 
   const cyclesPerMs = CYCLES_PER_SECOND / 1000;
   const cyclesToRun = Math.floor(cpuAccumulatorMs * cyclesPerMs);
+
+  const timerTicks = Math.floor(timerAccumulatorMs / TIMER_INTERVAL_MS);
+  if (timerTicks > 0) {
+    emulator.tickTimers(timerTicks);
+    timerAccumulatorMs -= timerTicks * TIMER_INTERVAL_MS;
+  }
 
   if (cyclesToRun > 0) {
     emulator.tick(cyclesToRun);
@@ -297,9 +329,9 @@ async function handleRomChange(event: Event): Promise<void> {
 
   const buffer = await file.arrayBuffer();
 
-  emulator.loadRom(new Uint8Array(buffer));
+  pendingRomBytes = new Uint8Array(buffer);
   romLabel.value = file.name;
-  renderFrame();
+  resetEmulator();
 }
 
 /**
@@ -360,8 +392,32 @@ function handleKeyUp(event: KeyboardEvent): void {
  */
 function resetEmulator(): void {
   emulator.reset();
+  cpuAccumulatorMs = 0;
+  timerAccumulatorMs = 0;
+  lastFrameMs = performance.now();
+  if (pendingRomBytes) {
+    emulator.loadRom(pendingRomBytes);
+  }
   soundTimerValue.value = emulator.soundTimer();
   renderFrame();
+}
+
+/**
+ * This function initializes the WASM-backed emulator instance.
+ * @returns A promise that resolves when initialization is complete.
+ */
+async function initEmulator(): Promise<void> {
+  try {
+    emulator = await createWasmClient();
+    emulator.setKeys(keyMask);
+    if (pendingRomBytes) {
+      emulator.loadRom(pendingRomBytes);
+    }
+    soundTimerValue.value = emulator.soundTimer();
+    renderFrame();
+  } catch (error) {
+    console.error("Failed to initialize the WASM emulator.", error);
+  }
 }
 
 /**
@@ -371,6 +427,7 @@ function resetEmulator(): void {
 onMounted(() => {
   configureCanvas();
   renderFrame();
+  void initEmulator();
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("keyup", handleKeyUp);
 });
