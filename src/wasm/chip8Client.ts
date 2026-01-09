@@ -9,6 +9,16 @@ import wasmUrl from "chip8wasm/chip8wasm_bg.wasm?url";
 export type Chip8KeyMask = number;
 
 /**
+ * This type stores the Chip-8 quirk configuration flags.
+ */
+export type Chip8Quirks = {
+  incrementIOnStore: boolean;
+  resetVfOnLogic: boolean;
+  wrapDraw: boolean;
+  shiftUsesVx: boolean;
+};
+
+/**
  * This interface describes the API that a Chip-8 implementation should expose.
  */
 export interface Chip8Client {
@@ -38,6 +48,13 @@ export interface Chip8Client {
    * @returns No return value.
    */
   tick(cycles: number): void;
+
+  /**
+   * This updates the emulator quirk configuration.
+   * @param quirks The quirk configuration to apply.
+   * @returns No return value.
+   */
+  setQuirks(quirks: Chip8Quirks): void;
 
   /**
    * This advances the delay and sound timers by a number of ticks.
@@ -130,6 +147,15 @@ export class StubChip8Client implements Chip8Client {
   }
 
   /**
+   * This ignores quirk updates because the stub has no emulator.
+   * @param quirks The quirk configuration to apply.
+   * @returns No return value.
+   */
+  public setQuirks(quirks: Chip8Quirks): void {
+    void quirks;
+  }
+
+  /**
    * This ignores timer ticks because the stub has no timers.
    * @param ticks The number of timer ticks to apply.
    * @returns No return value.
@@ -204,6 +230,20 @@ export class WasmChip8Client implements Chip8Client {
    */
   public tick(cycles: number): void {
     this.emulator.tick(cycles);
+  }
+
+  /**
+   * This updates the emulator quirk configuration.
+   * @param quirks The quirk configuration to apply.
+   * @returns No return value.
+   */
+  public setQuirks(quirks: Chip8Quirks): void {
+    this.emulator.setQuirks(
+      quirks.incrementIOnStore,
+      quirks.resetVfOnLogic,
+      quirks.wrapDraw,
+      quirks.shiftUsesVx,
+    );
   }
 
   /**

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap");
+
 /* This section defines the palette and typography for the app. */
 :root {
   --bg-start: #000000;
@@ -9,7 +11,7 @@
   --accent: #00ff00;
   --accent-strong: #00ff00;
   --screen-off: #000000;
-  --font-title: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-title: "Orbitron", "Avenir Next", "Segoe UI", sans-serif;
   --font-body: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
 }
 
@@ -90,6 +92,7 @@ body {
 /* This text value emphasizes the current status. */
 .app__status-value {
   font-size: 1.2rem;
+  font-family: var(--font-title);
 }
 
 /* This layout splits the screen and control columns. */
@@ -136,6 +139,48 @@ body {
   font-size: 0.9rem;
 }
 
+/* This block styles collapsible content under the screen. */
+.screen__details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(100%, 640px);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* This summary styles the collapsible header under the screen. */
+.screen__summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-title);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* This removes the default marker in WebKit to keep the arrow clean. */
+.screen__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* This adds a custom arrow indicator. */
+.screen__summary::before {
+  content: "▸";
+  display: inline-block;
+  color: var(--accent);
+  transition: transform 0.15s ease;
+}
+
+/* This rotates the arrow when the list is open. */
+.screen__details[open] .screen__summary::before {
+  transform: rotate(90deg);
+}
+
 /* This column stacks control groups. */
 .panel--controls {
   display: flex;
@@ -157,6 +202,13 @@ body {
   font-family: var(--font-title);
 }
 
+/* This note style provides extra context for control headings. */
+.controls__note {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 /* This paragraph style is used for helper text. */
 .controls__hint {
   margin: 0;
@@ -164,11 +216,81 @@ body {
   font-size: 0.9rem;
 }
 
+/* This label aligns form controls in the sidebar. */
+.controls__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+/* This select keeps the preset dropdown consistent with the theme. */
+.controls__select {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-family: var(--font-body);
+}
+
+/* This checkbox line aligns quirk toggles. */
+.controls__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 /* This layout aligns control buttons. */
 .controls__buttons {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
+  width: 100%;
+}
+
+/* This block styles the available ROM section. */
+.roms__section {
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* This button toggles the ROM list expansion. */
+.roms__toggle {
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-title);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* This adds a custom arrow indicator. */
+.roms__toggle::before {
+  content: "▸";
+  display: inline-block;
+  color: var(--accent);
+  transition: transform 0.15s ease;
+}
+
+/* This rotates the arrow when the list is open. */
+.roms__toggle[aria-expanded="true"]::before {
+  transform: rotate(90deg);
 }
 
 /* This style defines the primary button appearance. */
@@ -181,6 +303,7 @@ body {
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
 }
 
 /* This style handles inactive button states. */

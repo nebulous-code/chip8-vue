@@ -4,8 +4,8 @@
     <!-- This header provides the title and live status. -->
     <header class="app__header">
       <div class="app__branding">
-        <h1 class="app__title">Chip-8 Vue</h1>
-        <p class="app__subtitle">Vue scaffolding that consumes a Chip-8 client API</p>
+        <h1 class="app__title">CHIP-8 Vue</h1>
+        <p class="app__subtitle">Vue scaffolding that consumes a CHIP-8 client API</p>
       </div>
       <div class="app__status">
         <span class="app__status-label">Status</span>
@@ -23,13 +23,31 @@
           class="screen"
           :width="SCREEN_WIDTH"
           :height="SCREEN_HEIGHT"
-          aria-label="Chip-8 display"
+          aria-label="CHIP-8 display"
         ></canvas>
         <!-- This row shows ROM and sound status. -->
         <div class="screen__meta">
           <span>ROM: {{ romLabel }}</span>
           <span>Sound: {{ soundLabel }}</span>
         </div>
+        <details class="screen__details" open>
+          <summary class="screen__summary">Keypad Mapping</summary>
+          <p class="controls__hint">Keyboard input maps to the classic CHIP-8 keypad layout.</p>
+          <pre class="keypad">
+1 2 3 4     1 2 3 C
+Q W E R  => 4 5 6 D
+A S D F     7 8 9 E
+Z X C V     A 0 B F
+          </pre>
+        </details>
+        <details class="screen__details" open>
+          <summary class="screen__summary">About CHIP-8</summary>
+          <p class="controls__hint">
+            CHIP-8 is an interpreted language for the COSMAC VIP, created by Joseph Weisbecker
+            in the 1970s for the 1802 microprocessor. It was designed to make writing and running
+            games easier on early systems rather than acting as a dedicated game console.
+          </p>
+        </details>
       </section>
 
       <!-- This panel collects input controls and helper text. -->
@@ -37,13 +55,23 @@
         <div class="controls__group">
           <h2 class="controls__title">Controls</h2>
           <div class="controls__buttons">
-            <button type="button" class="button" :disabled="isRunning" @click="startLoop">
+            <button
+              type="button"
+              class="button"
+              :disabled="isRunning || !hasRom"
+              @click="startLoop"
+            >
               Start
             </button>
             <button type="button" class="button" :disabled="!isRunning" @click="stopLoop">
               Stop
             </button>
-            <button type="button" class="button button--ghost" @click="resetEmulator">
+            <button
+              type="button"
+              class="button button--ghost"
+              :disabled="!hasRom"
+              @click="resetEmulator"
+            >
               Reset
             </button>
           </div>
@@ -51,7 +79,39 @@
 
         <div class="controls__group">
           <h2 class="controls__title">ROM</h2>
-          <p class="controls__hint">Load a .ch8 file to replace the stub animation.</p>
+          <div class="roms__section">
+            <button
+              type="button"
+              class="roms__toggle"
+              :aria-expanded="showAllRoms"
+              @click="toggleRomList"
+            >
+              Available ROMs:
+            </button>
+            <div class="controls__buttons">
+              <button type="button" class="button" @click="loadPresetRom('CHIP-8 Logo')">
+                CHIP-8 Logo
+              </button>
+              <button type="button" class="button" @click="loadPresetRom('Flags')">
+                Flags
+              </button>
+              <button type="button" class="button" @click="loadPresetRom('Walking Man')">
+                Walking Man
+              </button>
+            </div>
+            <div v-if="showAllRoms" class="controls__buttons">
+              <button type="button" class="button" @click="loadPresetRom('Beep')">
+                Beep
+              </button>
+              <button type="button" class="button" @click="loadPresetRom('Quirks')">
+                Quirks
+              </button>
+              <button type="button" class="button" @click="loadPresetRom('Keypad')">
+                Keypad
+              </button>
+            </div>
+          </div>
+          <p class="controls__hint">Or load a CHIP-8 ROM in .ch8 format:</p>
           <input
             class="file-input"
             type="file"
@@ -62,21 +122,42 @@
 
         <div class="controls__group">
           <h2 class="controls__title">Sound</h2>
-          <p class="controls__hint">Toggle audio output for Chip-8 sound.</p>
+          <p class="controls__hint">Toggle audio output for CHIP-8 sound.</p>
           <button type="button" class="button button--ghost" @click="toggleMute">
             {{ isMuted ? "Unmute" : "Mute" }}
           </button>
         </div>
 
         <div class="controls__group">
-          <h2 class="controls__title">Keypad Mapping</h2>
-          <p class="controls__hint">Keyboard input maps to the classic CHIP-8 keypad layout.</p>
-          <pre class="keypad">
-1 2 3 4     1 2 3 C
-Q W E R  => 4 5 6 D
-A S D F     7 8 9 E
-Z X C V     A 0 B F
-          </pre>
+          <h2 class="controls__title">
+            Quirks <span class="controls__note">(requires restart)</span>
+          </h2>
+          <p class="controls__hint">Choose a preset or toggle individual flags.</p>
+          <label class="controls__label">
+            <span>Preset</span>
+            <select class="controls__select" :value="quirkPresetLabel" @change="selectQuirkPreset">
+              <option value="CHIP-8">CHIP-8</option>
+              <option value="Super CHIP-8">Super CHIP-8</option>
+              <option value="XO-CHIP">XO-CHIP</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </label>
+          <label class="controls__checkbox">
+            <input type="checkbox" v-model="quirks.incrementIOnStore" />
+            <span>Increment I on store</span>
+          </label>
+          <label class="controls__checkbox">
+            <input type="checkbox" v-model="quirks.resetVfOnLogic" />
+            <span>Reset VF on logic</span>
+          </label>
+          <label class="controls__checkbox">
+            <input type="checkbox" v-model="quirks.wrapDraw" />
+            <span>Wrap sprite draw</span>
+          </label>
+          <label class="controls__checkbox">
+            <input type="checkbox" v-model="quirks.shiftUsesVx" />
+            <span>Shift uses VX</span>
+          </label>
         </div>
       </section>
     </section>
@@ -90,6 +171,7 @@ import {
   StubChip8Client,
   type Chip8Client,
   type Chip8KeyMask,
+  type Chip8Quirks,
 } from "./wasm/chip8Client";
 
 /**
@@ -105,7 +187,12 @@ const SCREEN_HEIGHT = 32;
 /**
  * This constant defines the target CPU speed for the main loop.
  */
-const CYCLES_PER_SECOND = 700;
+const CYCLES_PER_SECOND = 1300;
+
+/**
+ * This constant caps CPU catch-up to keep the UI responsive.
+ */
+const MAX_CYCLES_PER_FRAME = 100;
 
 /**
  * This constant defines the timer tick rate.
@@ -116,6 +203,52 @@ const TIMER_HZ = 60;
  * This constant defines the timer interval in milliseconds.
  */
 const TIMER_INTERVAL_MS = 1000 / TIMER_HZ;
+
+/**
+ * This constant defines the render target frame rate.
+ */
+const TARGET_FPS = 60;
+
+/**
+ * This constant defines the render interval in milliseconds.
+ */
+const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
+
+/**
+ * This constant maps preset ROM labels to their file paths.
+ */
+const ROM_PRESETS: Record<string, string> = {
+  "CHIP-8 Logo": "/roms/1-chip8-logo.ch8",
+  Flags: "/roms/4-flags.ch8",
+  "Walking Man": "/roms/walking_man.ch8",
+  Beep: "/roms/7-beep.ch8",
+  Quirks: "/roms/5-quirks.ch8",
+  Keypad: "/roms/6-keypad.ch8",
+};
+
+/**
+ * This set of presets defines the supported quirk configurations.
+ */
+const QUIRK_PRESETS: Record<string, Chip8Quirks> = {
+  "CHIP-8": {
+    incrementIOnStore: true,
+    resetVfOnLogic: true,
+    wrapDraw: false,
+    shiftUsesVx: false,
+  },
+  "Super CHIP-8": {
+    incrementIOnStore: false,
+    resetVfOnLogic: false,
+    wrapDraw: false,
+    shiftUsesVx: true,
+  },
+  "XO-CHIP": {
+    incrementIOnStore: true,
+    resetVfOnLogic: false,
+    wrapDraw: true,
+    shiftUsesVx: false,
+  },
+};
 
 /**
  * This ref stores the canvas element for drawing.
@@ -138,6 +271,11 @@ const romLabel = ref("No ROM loaded");
 const soundTimerValue = ref(0);
 
 /**
+ * This ref stores the current quirk configuration.
+ */
+const quirks = ref<Chip8Quirks>({ ...QUIRK_PRESETS["CHIP-8"] });
+
+/**
  * This ref stores whether audio output is muted.
  */
 const isMuted = ref(true);
@@ -146,6 +284,15 @@ const isMuted = ref(true);
  * This computed value exposes the current run state.
  */
 const statusLabel = computed(() => (isRunning.value ? "Running" : "Stopped"));
+
+const hasRom = computed(() => pendingRomBytes.value !== null);
+
+const showAllRoms = ref(false);
+
+/**
+ * This computed value exposes the active quirk preset name.
+ */
+const quirkPresetLabel = computed(() => getQuirkPresetLabel(quirks.value));
 
 /**
  * This computed value exposes the current sound state.
@@ -205,6 +352,11 @@ let cpuAccumulatorMs = 0;
 let timerAccumulatorMs = 0;
 
 /**
+ * This value accumulates time for rendering at a steady rate.
+ */
+let frameAccumulatorMs = 0;
+
+/**
  * This value stores the 2D canvas context for drawing.
  */
 let canvasContext: CanvasRenderingContext2D | null = null;
@@ -232,7 +384,58 @@ let toneGain: GainNode | null = null;
 /**
  * This value stores the most recent ROM bytes for reloads.
  */
-let pendingRomBytes: Uint8Array | null = null;
+const pendingRomBytes = ref<Uint8Array | null>(null);
+
+/**
+ * This function toggles the preset ROM list expansion.
+ * @returns No return value.
+ */
+function toggleRomList(): void {
+  showAllRoms.value = !showAllRoms.value;
+}
+
+/**
+ * This function compares two quirk configurations.
+ * @param left The first quirk configuration.
+ * @param right The second quirk configuration.
+ * @returns True if all flags match.
+ */
+function quirksMatch(left: Chip8Quirks, right: Chip8Quirks): boolean {
+  return (
+    left.incrementIOnStore === right.incrementIOnStore &&
+    left.resetVfOnLogic === right.resetVfOnLogic &&
+    left.wrapDraw === right.wrapDraw &&
+    left.shiftUsesVx === right.shiftUsesVx
+  );
+}
+
+/**
+ * This function determines the preset name for a quirk configuration.
+ * @param current The current quirk configuration.
+ * @returns The preset label or Custom if no match.
+ */
+function getQuirkPresetLabel(current: Chip8Quirks): string {
+  for (const [label, preset] of Object.entries(QUIRK_PRESETS)) {
+    if (quirksMatch(current, preset)) {
+      return label;
+    }
+  }
+  return "Custom";
+}
+
+/**
+ * This function applies a preset selected from the dropdown.
+ * @param event The select change event.
+ * @returns No return value.
+ */
+function selectQuirkPreset(event: Event): void {
+  const target = event.target as HTMLSelectElement | null;
+  const value = target?.value;
+  if (!value || !(value in QUIRK_PRESETS)) {
+    return;
+  }
+  quirks.value = { ...QUIRK_PRESETS[value] };
+}
 
 /**
  * This function configures the canvas for 1:1 pixel rendering.
@@ -332,13 +535,14 @@ function toggleMute(): void {
  * @returns No return value.
  */
 function startLoop(): void {
-  if (isRunning.value) {
+  if (isRunning.value || !pendingRomBytes.value) {
     return;
   }
 
   isRunning.value = true;
   ensureAudioContext();
   lastFrameMs = performance.now();
+  frameAccumulatorMs = 0;
   updateSoundState();
   rafId = window.requestAnimationFrame(loop);
 }
@@ -371,6 +575,7 @@ function loop(timestamp: number): void {
   lastFrameMs = timestamp;
   cpuAccumulatorMs += deltaMs;
   timerAccumulatorMs += deltaMs;
+  frameAccumulatorMs += deltaMs;
 
   const cyclesPerMs = CYCLES_PER_SECOND / 1000;
   const cyclesToRun = Math.floor(cpuAccumulatorMs * cyclesPerMs);
@@ -382,13 +587,18 @@ function loop(timestamp: number): void {
   }
 
   if (cyclesToRun > 0) {
-    emulator.tick(cyclesToRun);
-    cpuAccumulatorMs -= cyclesToRun / cyclesPerMs;
+    const cappedCycles = Math.min(cyclesToRun, MAX_CYCLES_PER_FRAME);
+    emulator.tick(cappedCycles);
+    cpuAccumulatorMs -= cappedCycles / cyclesPerMs;
   }
 
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
-  renderFrame();
+
+  if (frameAccumulatorMs >= FRAME_INTERVAL_MS) {
+    frameAccumulatorMs -= FRAME_INTERVAL_MS;
+    renderFrame();
+  }
 
   rafId = window.requestAnimationFrame(loop);
 }
@@ -409,8 +619,42 @@ async function handleRomChange(event: Event): Promise<void> {
   const buffer = await file.arrayBuffer();
 
   stopLoop();
-  pendingRomBytes = new Uint8Array(buffer);
-  romLabel.value = file.name;
+  applyRomBytes(new Uint8Array(buffer), file.name);
+}
+
+/**
+ * This function loads a preset ROM by label.
+ * @param label The preset ROM label.
+ * @returns A promise that resolves when the ROM is loaded.
+ */
+async function loadPresetRom(label: string): Promise<void> {
+  const path = ROM_PRESETS[label];
+  if (!path) {
+    return;
+  }
+
+  stopLoop();
+  try {
+    const response = await fetch(path);
+    if (!response.ok) {
+      throw new Error(`Failed to load ROM: ${response.status}`);
+    }
+    const buffer = await response.arrayBuffer();
+    applyRomBytes(new Uint8Array(buffer), label);
+  } catch (error) {
+    console.error("Failed to load the preset ROM.", error);
+  }
+}
+
+/**
+ * This function stores ROM bytes and restarts the emulator.
+ * @param romBytes The ROM bytes to load.
+ * @param label The label to display for the ROM.
+ * @returns No return value.
+ */
+function applyRomBytes(romBytes: Uint8Array, label: string): void {
+  pendingRomBytes.value = romBytes;
+  romLabel.value = label;
   resetEmulator();
 }
 
@@ -471,12 +715,14 @@ function handleKeyUp(event: KeyboardEvent): void {
  * @returns No return value.
  */
 function resetEmulator(): void {
+  emulator.setQuirks(quirks.value);
   emulator.reset();
   cpuAccumulatorMs = 0;
   timerAccumulatorMs = 0;
+  frameAccumulatorMs = 0;
   lastFrameMs = performance.now();
-  if (pendingRomBytes) {
-    emulator.loadRom(pendingRomBytes);
+  if (pendingRomBytes.value) {
+    emulator.loadRom(pendingRomBytes.value);
   }
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
@@ -491,8 +737,9 @@ async function initEmulator(): Promise<void> {
   try {
     emulator = await createWasmClient();
     emulator.setKeys(keyMask);
-    if (pendingRomBytes) {
-      emulator.loadRom(pendingRomBytes);
+    emulator.setQuirks(quirks.value);
+    if (pendingRomBytes.value) {
+      emulator.loadRom(pendingRomBytes.value);
     }
     soundTimerValue.value = emulator.soundTimer();
     updateSoundState();
