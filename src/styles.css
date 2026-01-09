@@ -63,6 +63,10 @@ body {
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.08em;
+  padding: 10px 16px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--panel-border);
 }
 
 /* This block styles the brand title and subtitle. */
@@ -121,7 +125,7 @@ body {
 .app__content {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  gap: 24px;
+  gap: 16px;
 }
 
 /* This panel style provides a shared card appearance. */
@@ -139,6 +143,20 @@ body {
   flex-direction: column;
   gap: 16px;
   align-items: center;
+}
+
+/* This column stacks the screen panel and the details panel. */
+.screen__column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* This panel stacks the keypad and about sections. */
+.panel--details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* This canvas displays the pixel-perfect framebuffer. */
@@ -166,7 +184,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: min(100%, 640px);
+  width: 100%;
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   padding: 10px 14px;
@@ -224,6 +242,47 @@ body {
   font-family: var(--font-title);
 }
 
+/* This block styles collapsible control groups. */
+.controls__details {
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* This summary styles the collapsible header in the controls panel. */
+.controls__summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 1rem;
+  font-family: var(--font-title);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* This removes the default marker in WebKit to keep the arrow clean. */
+.controls__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* This adds a custom arrow indicator. */
+.controls__summary::before {
+  content: "▸";
+  display: inline-block;
+  color: var(--accent);
+  transition: transform 0.15s ease;
+}
+
+/* This rotates the arrow when the list is open. */
+.controls__details[open] .controls__summary::before {
+  transform: rotate(90deg);
+}
+
 /* This note style provides extra context for control headings. */
 .controls__note {
   font-size: 0.8rem;
@@ -278,6 +337,25 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
   width: 100%;
+}
+
+/* This row aligns the step control and program counter. */
+.controls__step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* This keeps the step button compact so the address sits beside it. */
+.controls__step .button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+/* This label shows the current program counter. */
+.controls__pc {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 /* This ensures buttons can shrink within grid columns. */
@@ -412,6 +490,14 @@ body {
 .file-input::-webkit-file-upload-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 20px rgba(0, 255, 0, 0.25);
+}
+
+/* This highlights the upload button when an uploaded ROM is active. */
+.file-input--active::file-selector-button,
+.file-input--active::-webkit-file-upload-button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000000;
 }
 
 /* This block styles the keypad mapping table. */

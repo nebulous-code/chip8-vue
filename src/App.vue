@@ -22,39 +22,43 @@
 
     <!-- This section organizes the screen and control panels. -->
     <section class="app__content">
-      <!-- This panel contains the CHIP-8 screen and metadata. -->
-      <section class="panel panel--screen">
-        <!-- This canvas displays the 64x32 framebuffer. -->
-        <canvas
-          ref="canvasRef"
-          class="screen"
-          :width="SCREEN_WIDTH"
-          :height="SCREEN_HEIGHT"
-          aria-label="CHIP-8 display"
-        ></canvas>
-        <!-- This row shows ROM and sound status. -->
-        <div class="screen__meta">
-          <span>ROM: {{ romLabel }}</span>
-          <span>Sound: {{ soundLabel }}</span>
-        </div>
-        <details class="screen__details" open>
-          <summary class="screen__summary">Keypad Mapping</summary>
-          <p class="controls__hint">Keyboard input maps to the classic CHIP-8 keypad layout.</p>
-          <pre class="keypad">
+      <section class="screen__column">
+        <!-- This panel contains the CHIP-8 screen and metadata. -->
+        <section class="panel panel--screen">
+          <!-- This canvas displays the 64x32 framebuffer. -->
+          <canvas
+            ref="canvasRef"
+            class="screen"
+            :width="SCREEN_WIDTH"
+            :height="SCREEN_HEIGHT"
+            aria-label="CHIP-8 display"
+          ></canvas>
+          <!-- This row shows ROM and sound status. -->
+          <div class="screen__meta">
+            <span>ROM: {{ romLabel }}</span>
+            <span>Sound: {{ soundLabel }}</span>
+          </div>
+        </section>
+        <section class="panel panel--details">
+          <details class="screen__details" open>
+            <summary class="screen__summary">Keypad Mapping</summary>
+            <p class="controls__hint">Keyboard input maps to the classic CHIP-8 keypad layout.</p>
+            <pre class="keypad">
 1 2 3 4     1 2 3 C
 Q W E R  => 4 5 6 D
 A S D F     7 8 9 E
 Z X C V     A 0 B F
           </pre>
-        </details>
-        <details class="screen__details" open>
-          <summary class="screen__summary">About CHIP-8</summary>
-          <p class="controls__hint">
-            CHIP-8 is an interpreted language for the COSMAC VIP, created by Joseph Weisbecker
-            in the 1970s for the 1802 microprocessor. It was designed to make writing and running
-            games easier on early systems rather than acting as a dedicated game console.
-          </p>
-        </details>
+          </details>
+          <details class="screen__details" open>
+            <summary class="screen__summary">About CHIP-8</summary>
+            <p class="controls__hint">
+              CHIP-8 is an interpreted language for the COSMAC VIP, created by Joseph Weisbecker
+              in the 1970s for the 1802 microprocessor. It was designed to make writing and running
+              games easier on early systems rather than acting as a dedicated game console.
+            </p>
+          </details>
+        </section>
       </section>
 
       <!-- This panel collects input controls and helper text. -->
@@ -65,13 +69,10 @@ Z X C V     A 0 B F
             <button
               type="button"
               class="button"
-              :disabled="isRunning || !hasRom"
-              @click="startLoop"
+              :disabled="!hasRom"
+              @click="toggleRunState"
             >
-              Start
-            </button>
-            <button type="button" class="button" :disabled="!isRunning" @click="stopLoop">
-              Stop
+              {{ runButtonLabel }}
             </button>
             <button
               type="button"
@@ -81,6 +82,17 @@ Z X C V     A 0 B F
             >
               Reset
             </button>
+          </div>
+          <div class="controls__step">
+            <button
+              type="button"
+              class="button button--ghost"
+              :disabled="isRunning || !hasRom"
+              @click="stepOnce"
+            >
+              Step
+            </button>
+            <span class="controls__pc">PC: {{ programCounterLabel }}</span>
           </div>
         </div>
 
@@ -151,6 +163,7 @@ Z X C V     A 0 B F
           <p class="controls__hint">Or load a CHIP-8 ROM in .ch8 format:</p>
           <input
             class="file-input"
+            :class="{ 'file-input--active': isUploadedRomActive }"
             type="file"
             accept=".ch8"
             @change="handleRomChange"
@@ -166,35 +179,41 @@ Z X C V     A 0 B F
         </div>
 
         <div class="controls__group">
-          <h2 class="controls__title">
-            Quirks <span class="controls__note">(requires restart)</span>
-          </h2>
-          <p class="controls__hint">Choose a preset or toggle individual flags.</p>
-          <label class="controls__label">
-            <span>Preset</span>
-            <select class="controls__select" :value="quirkPresetLabel" @change="selectQuirkPreset">
-              <option value="CHIP-8">CHIP-8</option>
-              <option value="Super CHIP-8">Super CHIP-8</option>
-              <option value="XO-CHIP">XO-CHIP</option>
-              <option value="Custom">Custom</option>
-            </select>
-          </label>
-          <label class="controls__checkbox">
-            <input type="checkbox" v-model="quirks.incrementIOnStore" />
-            <span>Increment I on store</span>
-          </label>
-          <label class="controls__checkbox">
-            <input type="checkbox" v-model="quirks.resetVfOnLogic" />
-            <span>Reset VF on logic</span>
-          </label>
-          <label class="controls__checkbox">
-            <input type="checkbox" v-model="quirks.wrapDraw" />
-            <span>Wrap sprite draw</span>
-          </label>
-          <label class="controls__checkbox">
-            <input type="checkbox" v-model="quirks.shiftUsesVx" />
-            <span>Shift uses VX</span>
-          </label>
+          <details class="controls__details" open>
+            <summary class="controls__summary">
+              Quirks <span class="controls__note">(requires restart)</span>
+            </summary>
+            <p class="controls__hint">Choose a preset or toggle individual flags.</p>
+            <label class="controls__label">
+              <span>Preset</span>
+              <select
+                class="controls__select"
+                :value="quirkPresetLabel"
+                @change="selectQuirkPreset"
+              >
+                <option value="CHIP-8">CHIP-8</option>
+                <option value="Super CHIP-8">Super CHIP-8</option>
+                <option value="XO-CHIP">XO-CHIP</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </label>
+            <label class="controls__checkbox">
+              <input type="checkbox" v-model="quirks.incrementIOnStore" />
+              <span>Increment I on store</span>
+            </label>
+            <label class="controls__checkbox">
+              <input type="checkbox" v-model="quirks.resetVfOnLogic" />
+              <span>Reset VF on logic</span>
+            </label>
+            <label class="controls__checkbox">
+              <input type="checkbox" v-model="quirks.wrapDraw" />
+              <span>Wrap sprite draw</span>
+            </label>
+            <label class="controls__checkbox">
+              <input type="checkbox" v-model="quirks.shiftUsesVx" />
+              <span>Shift uses VX</span>
+            </label>
+          </details>
         </div>
       </section>
     </section>
@@ -324,14 +343,39 @@ const showAllRoms = ref(false);
 const activeRomLabel = ref<string | null>(null);
 
 /**
+ * This ref stores the current program counter value.
+ */
+const programCounter = ref(0x200);
+
+/**
  * This computed value exposes the active quirk preset name.
  */
 const quirkPresetLabel = computed(() => getQuirkPresetLabel(quirks.value));
 
 /**
+ * This computed value exposes the run button label.
+ */
+const runButtonLabel = computed(() => (isRunning.value ? "Pause" : "Start"));
+
+/**
+ * This computed value exposes the program counter display.
+ */
+const programCounterLabel = computed(() => {
+  const hex = programCounter.value.toString(16).toUpperCase().padStart(4, "0");
+  return `0x${hex}`;
+});
+
+/**
  * This computed value exposes the current sound state.
  */
 const soundLabel = computed(() => (soundTimerValue.value > 0 ? "Beep" : "Silent"));
+
+/**
+ * This computed value indicates an uploaded ROM is active.
+ */
+const isUploadedRomActive = computed(
+  () => hasRom.value && activeRomLabel.value === null,
+);
 
 /**
  * This instance represents the emulator client boundary.
@@ -591,6 +635,18 @@ function startLoop(): void {
 }
 
 /**
+ * This function toggles between running and paused states.
+ * @returns No return value.
+ */
+function toggleRunState(): void {
+  if (isRunning.value) {
+    stopLoop();
+  } else {
+    startLoop();
+  }
+}
+
+/**
  * This function stops the animation loop.
  * @returns No return value.
  */
@@ -635,6 +691,7 @@ function loop(timestamp: number): void {
     cpuAccumulatorMs -= cappedCycles / cyclesPerMs;
   }
 
+  programCounter.value = emulator.programCounter();
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
 
@@ -644,6 +701,22 @@ function loop(timestamp: number): void {
   }
 
   rafId = window.requestAnimationFrame(loop);
+}
+
+/**
+ * This function advances the emulator by a single instruction.
+ * @returns No return value.
+ */
+function stepOnce(): void {
+  if (isRunning.value || !pendingRomBytes.value) {
+    return;
+  }
+
+  emulator.tick(1);
+  programCounter.value = emulator.programCounter();
+  soundTimerValue.value = emulator.soundTimer();
+  updateSoundState();
+  renderFrame();
 }
 
 /**
@@ -769,6 +842,7 @@ function resetEmulator(): void {
   if (pendingRomBytes.value) {
     emulator.loadRom(pendingRomBytes.value);
   }
+  programCounter.value = emulator.programCounter();
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
   renderFrame();
@@ -786,6 +860,7 @@ async function initEmulator(): Promise<void> {
     if (pendingRomBytes.value) {
       emulator.loadRom(pendingRomBytes.value);
     }
+    programCounter.value = emulator.programCounter();
     soundTimerValue.value = emulator.soundTimer();
     updateSoundState();
     renderFrame();

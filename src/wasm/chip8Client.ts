@@ -74,6 +74,12 @@ export interface Chip8Client {
    * @returns The current sound timer value.
    */
   soundTimer(): number;
+
+  /**
+   * This returns the current program counter address.
+   * @returns The current program counter address.
+   */
+  programCounter(): number;
 }
 
 /**
@@ -87,6 +93,8 @@ export class StubChip8Client implements Chip8Client {
   private frameCounter: number;
   /** This value stores the current key mask. */
   private keyMask: Chip8KeyMask;
+  /** This value stores the current program counter. */
+  private programCounterValue: number;
 
   /**
    * This constructs a stub client with an empty framebuffer.
@@ -96,6 +104,7 @@ export class StubChip8Client implements Chip8Client {
     this.framebufferData = new Uint8Array(64 * 32);
     this.frameCounter = 0;
     this.keyMask = 0;
+    this.programCounterValue = 0x200;
   }
 
   /**
@@ -105,6 +114,7 @@ export class StubChip8Client implements Chip8Client {
   public reset(): void {
     this.framebufferData.fill(0);
     this.frameCounter = 0;
+    this.programCounterValue = 0x200;
   }
 
   /**
@@ -134,6 +144,7 @@ export class StubChip8Client implements Chip8Client {
   public tick(cycles: number): void {
     const safeCycles = Math.max(1, Math.floor(cycles));
     this.frameCounter += safeCycles;
+    this.programCounterValue = (this.programCounterValue + safeCycles * 2) & 0x0fff;
 
     const x = this.frameCounter % 64;
     const y = Math.floor(this.frameCounter / 64) % 32;
@@ -179,6 +190,14 @@ export class StubChip8Client implements Chip8Client {
   public soundTimer(): number {
     return 0;
   }
+
+  /**
+   * This returns a stubbed program counter value.
+   * @returns The current program counter value.
+   */
+  public programCounter(): number {
+    return this.programCounterValue;
+  }
 }
 
 /**
@@ -187,6 +206,8 @@ export class StubChip8Client implements Chip8Client {
 export class WasmChip8Client implements Chip8Client {
   /** This field stores the WASM emulator instance. */
   private readonly emulator: Chip8Wasm;
+  /** This field stores whether the emulator exposes programCounter. */
+  private readonly hasProgramCounter: boolean;
 
   /**
    * This constructs a WASM-backed Chip-8 client.
@@ -195,6 +216,9 @@ export class WasmChip8Client implements Chip8Client {
    */
   public constructor(emulator: Chip8Wasm) {
     this.emulator = emulator;
+    this.hasProgramCounter =
+      typeof (emulator as unknown as { programCounter?: () => number }).programCounter ===
+      "function";
   }
 
   /**
@@ -269,6 +293,17 @@ export class WasmChip8Client implements Chip8Client {
    */
   public soundTimer(): number {
     return this.emulator.soundTimer();
+  }
+
+  /**
+   * This returns the current program counter value.
+   * @returns The current program counter value.
+   */
+  public programCounter(): number {
+    if (!this.hasProgramCounter) {
+      return 0x200;
+    }
+    return this.emulator.programCounter();
   }
 }
 
