@@ -261,17 +261,28 @@ body {
   font-family: var(--font-title);
   list-style: none;
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+/* This row layout keeps summary text and notes on one line. */
+.controls__summary--row {
+  flex-direction: row;
   align-items: center;
   gap: 8px;
 }
 
-/* This removes the default marker in WebKit to keep the arrow clean. */
-.controls__summary::-webkit-details-marker {
-  display: none;
+/* This label keeps the summary title compact. */
+.controls__summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* This adds a custom arrow indicator. */
-.controls__summary::before {
+.controls__summary-title::before {
   content: "▸";
   display: inline-block;
   color: var(--accent);
@@ -279,9 +290,15 @@ body {
 }
 
 /* This rotates the arrow when the list is open. */
-.controls__details[open] .controls__summary::before {
+.controls__details[open] .controls__summary-title::before {
   transform: rotate(90deg);
 }
+
+/* This removes the default marker in WebKit to keep the arrow clean. */
+.controls__summary::-webkit-details-marker {
+  display: none;
+}
+
 
 /* This note style provides extra context for control headings. */
 .controls__note {
@@ -305,6 +322,23 @@ body {
   gap: 12px;
   color: var(--text);
   font-size: 0.9rem;
+}
+
+/* This layout pads and stretches the preset dropdown row. */
+.controls__label--preset {
+  justify-content: flex-start;
+  padding: 6px 0;
+}
+
+/* This keeps the preset label compact. */
+.controls__label--preset span {
+  white-space: nowrap;
+}
+
+/* This stretches the preset dropdown to fill the row. */
+.controls__label--preset .controls__select {
+  flex: 1;
+  width: 100%;
 }
 
 /* This select keeps the preset dropdown consistent with the theme. */
@@ -339,21 +373,36 @@ body {
   width: 100%;
 }
 
-/* This row aligns the step control and program counter. */
+/* This block stacks the step controls and instruction output. */
 .controls__step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* This row aligns the step button with the address labels. */
+.controls__step-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 /* This keeps the step button compact so the address sits beside it. */
-.controls__step .button {
+.controls__step-row .button {
   width: auto;
   flex: 0 0 auto;
 }
 
 /* This label shows the current program counter. */
 .controls__pc {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* This label shows the decoded instruction text. */
+.controls__instruction {
+  margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
 }
@@ -450,10 +499,10 @@ body {
 
 /* This input styling keeps the file picker aligned with the theme. */
 .file-input {
-  padding: 10px;
+  padding: 6px 0;
   border-radius: 12px;
-  border: 1px dashed var(--panel-border);
-  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  background: transparent;
   color: var(--text);
   width: 100%;
   font-family: var(--font-body);
@@ -506,7 +555,6 @@ body {
   padding: 12px 16px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--panel-border);
   color: var(--muted);
   font-family: var(--font-body);
   line-height: 1.4;

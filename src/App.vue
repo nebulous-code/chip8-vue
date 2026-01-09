@@ -64,36 +64,44 @@ Z X C V     A 0 B F
       <!-- This panel collects input controls and helper text. -->
       <section class="panel panel--controls">
         <div class="controls__group">
-          <h2 class="controls__title">Control Flow</h2>
-          <div class="controls__buttons">
-            <button
-              type="button"
-              class="button"
-              :disabled="!hasRom"
-              @click="toggleRunState"
-            >
-              {{ runButtonLabel }}
-            </button>
-            <button
-              type="button"
-              class="button button--ghost"
-              :disabled="!hasRom"
-              @click="resetEmulator"
-            >
-              Reset
-            </button>
-          </div>
-          <div class="controls__step">
-            <button
-              type="button"
-              class="button button--ghost"
-              :disabled="isRunning || !hasRom"
-              @click="stepOnce"
-            >
-              Step
-            </button>
-            <span class="controls__pc">PC: {{ programCounterLabel }}</span>
-          </div>
+          <details class="controls__details">
+            <summary class="controls__summary">
+              <span class="controls__summary-title">Control Flow</span>
+              <div class="controls__summary-buttons controls__buttons">
+                <button
+                  type="button"
+                  class="button"
+                  :disabled="!hasRom"
+                  @click.stop.prevent="toggleRunState"
+                >
+                  {{ runButtonLabel }}
+                </button>
+                <button
+                  type="button"
+                  class="button button--ghost"
+                  :disabled="!hasRom"
+                  @click.stop.prevent="resetEmulator"
+                >
+                  Reset
+                </button>
+              </div>
+            </summary>
+            <div class="controls__step">
+              <div class="controls__step-row">
+                <button
+                  type="button"
+                  class="button button--ghost"
+                  :disabled="isRunning || !hasRom"
+                  @click="stepOnce"
+                >
+                  Step
+                </button>
+                <span class="controls__pc">PC: {{ programCounterLabel }}</span>
+                <span class="controls__pc">INSR: {{ instructionWordLabel }}</span>
+              </div>
+              <p class="controls__instruction">{{ instructionDescription }}</p>
+            </div>
+          </details>
         </div>
 
         <div class="controls__group">
@@ -119,10 +127,10 @@ Z X C V     A 0 B F
             <button
               type="button"
               class="button button--ghost"
-              :class="{ 'button--active': isActiveRom('Flags') }"
-              @click="loadPresetRom('Flags')"
+              :class="{ 'button--active': isActiveRom('Flag Tests') }"
+              @click="loadPresetRom('Flag Tests')"
             >
-              Flags
+              Flag Tests
             </button>
             <button
               type="button"
@@ -133,7 +141,7 @@ Z X C V     A 0 B F
               Walking Man
             </button>
           </div>
-          <div v-if="showAllRoms" class="controls__buttons">
+            <div v-if="showAllRoms" class="controls__buttons">
               <button
                 type="button"
                 class="button button--ghost"
@@ -159,15 +167,15 @@ Z X C V     A 0 B F
                 Keypad
               </button>
             </div>
+            <p class="controls__hint">Or load a CHIP-8 ROM in .ch8 format:</p>
+            <input
+              class="file-input"
+              :class="{ 'file-input--active': isUploadedRomActive }"
+              type="file"
+              accept=".ch8"
+              @change="handleRomChange"
+            />
           </div>
-          <p class="controls__hint">Or load a CHIP-8 ROM in .ch8 format:</p>
-          <input
-            class="file-input"
-            :class="{ 'file-input--active': isUploadedRomActive }"
-            type="file"
-            accept=".ch8"
-            @change="handleRomChange"
-          />
         </div>
 
         <div class="controls__group">
@@ -179,13 +187,14 @@ Z X C V     A 0 B F
         </div>
 
         <div class="controls__group">
-          <details class="controls__details" open>
-            <summary class="controls__summary">
-              Quirks <span class="controls__note">(requires restart)</span>
+          <details class="controls__details">
+            <summary class="controls__summary controls__summary--row">
+              <span class="controls__summary-title">Quirks</span>
+              <span class="controls__note">(requires reset)</span>
             </summary>
             <p class="controls__hint">Choose a preset or toggle individual flags.</p>
-            <label class="controls__label">
-              <span>Preset</span>
+            <label class="controls__label controls__label--preset">
+              <span>Preset:</span>
               <select
                 class="controls__select"
                 :value="quirkPresetLabel"
@@ -275,7 +284,7 @@ const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
  */
 const ROM_PRESETS: Record<string, string> = {
   "CHIP-8 Logo": "/roms/1-chip8-logo.ch8",
-  Flags: "/roms/4-flags.ch8",
+  "Flag Tests": "/roms/4-flags.ch8",
   "Walking Man": "/roms/walking_man.ch8",
   Beep: "/roms/7-beep.ch8",
   Quirks: "/roms/5-quirks.ch8",
@@ -348,6 +357,11 @@ const activeRomLabel = ref<string | null>(null);
 const programCounter = ref(0x200);
 
 /**
+ * This ref stores the current instruction word.
+ */
+const instructionWord = ref(0x0000);
+
+/**
  * This computed value exposes the active quirk preset name.
  */
 const quirkPresetLabel = computed(() => getQuirkPresetLabel(quirks.value));
@@ -361,8 +375,21 @@ const runButtonLabel = computed(() => (isRunning.value ? "Pause" : "Start"));
  * This computed value exposes the program counter display.
  */
 const programCounterLabel = computed(() => {
-  const hex = programCounter.value.toString(16).toUpperCase().padStart(4, "0");
-  return `0x${hex}`;
+  return `0x${formatHex(programCounter.value, 4)}`;
+});
+
+/**
+ * This computed value exposes the current instruction word display.
+ */
+const instructionWordLabel = computed(() => {
+  return `0x${formatHex(instructionWord.value, 4)}`;
+});
+
+/**
+ * This computed value exposes the decoded instruction description.
+ */
+const instructionDescription = computed(() => {
+  return decodeInstruction(instructionWord.value);
 });
 
 /**
@@ -376,6 +403,199 @@ const soundLabel = computed(() => (soundTimerValue.value > 0 ? "Beep" : "Silent"
 const isUploadedRomActive = computed(
   () => hasRom.value && activeRomLabel.value === null,
 );
+
+/**
+ * This function formats a number as uppercase hex with padding.
+ * @param value The numeric value to format.
+ * @param width The minimum character width.
+ * @returns The padded hex string.
+ */
+function formatHex(value: number, width: number): string {
+  return value.toString(16).toUpperCase().padStart(width, "0");
+}
+
+/**
+ * This function decodes a CHIP-8 instruction word into a description.
+ * @param word The instruction word.
+ * @returns The human-readable description.
+ */
+function decodeInstruction(word: number): string {
+  const ab = (word >> 8) & 0xff;
+  const cd = word & 0xff;
+  const a = (ab & 0xf0) >> 4;
+  const b = ab & 0x0f;
+  const c = (cd & 0xf0) >> 4;
+  const d = cd & 0x0f;
+  const addr = (b << 8) | cd;
+
+  switch (a) {
+    case 0x0:
+      switch (cd) {
+        case 0xe0:
+          return "Clear Screen";
+        case 0xee:
+          return "Return from Subroutine";
+        default:
+          return "Unknown Command";
+      }
+    case 0x1:
+      return `Jump to address 0x${formatHex(addr, 3)}`;
+    case 0x2:
+      return `Execute subroutine at address: 0x${formatHex(addr, 3)}`;
+    case 0x3:
+      return `Skip next instruction if register ${formatHex(b, 1)} is 0x${formatHex(
+        cd,
+        2,
+      )}`;
+    case 0x4:
+      return `Skip next instruction if register ${formatHex(b, 1)} is not 0x${formatHex(
+        cd,
+        2,
+      )}`;
+    case 0x5:
+      return `Skip next instruction if register ${formatHex(
+        b,
+        1,
+      )} is equal to register ${formatHex(c, 1)}`;
+    case 0x6:
+      return `Store value 0x${formatHex(cd, 2)} into register ${formatHex(b, 1)}`;
+    case 0x7:
+      return `Add value 0x${formatHex(cd, 2)} to register${formatHex(b, 1)}`;
+    case 0x8:
+      switch (d) {
+        case 0x0:
+          return `Store value of register ${formatHex(c, 1)} into register${formatHex(b, 1)}`;
+        case 0x1:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            b,
+            1,
+          )} OR register ${formatHex(c, 1)}`;
+        case 0x2:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            b,
+            1,
+          )} AND register ${formatHex(c, 1)}`;
+        case 0x3:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            b,
+            1,
+          )} XOR register ${formatHex(c, 1)}`;
+        case 0x4:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            b,
+            1,
+          )} PLUS register ${formatHex(c, 1)}`;
+        case 0x5:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            b,
+            1,
+          )} MINUS register ${formatHex(c, 1)}`;
+        case 0x6:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            c,
+            1,
+          )} shifted RIGHT one bit`;
+        case 0x7:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            c,
+            1,
+          )} MINUS register ${formatHex(b, 1)}`;
+        case 0xe:
+          return `Set register ${formatHex(b, 1)} to register ${formatHex(
+            c,
+            1,
+          )} shifted LEFT one bit`;
+        default:
+          return "Unknown Command";
+      }
+    case 0x9:
+      return `Skip next instruction if register ${formatHex(
+        b,
+        1,
+      )} is not equal to register ${formatHex(c, 1)}`;
+    case 0xa:
+      return `Store memory address 0x${formatHex(addr, 3)} into Register I`;
+    case 0xb:
+      return `Jump to address 0x${formatHex(addr, 3)} PLUS register 0`;
+    case 0xc:
+      return `Set register ${formatHex(b, 1)} to a random number masked by ${formatHex(
+        cd,
+        2,
+      )}`;
+    case 0xd:
+      return `Draw sprite located in memory at register I at X location in register ${formatHex(
+        b,
+        1,
+      )} and Y location in register ${formatHex(
+        c,
+        1,
+      )} and make it 0x${formatHex(d, 1)} lines tall`;
+    case 0xe:
+      switch (cd) {
+        case 0x9e:
+          return `Skip next instruction if key stored in register ${formatHex(
+            b,
+            1,
+          )} is pressed.`;
+        case 0xa1:
+          return `Skip next instruction if key stored in register ${formatHex(
+            b,
+            1,
+          )} is not pressed.`;
+        default:
+          return "Unknown Command";
+      }
+    case 0xf:
+      switch (cd) {
+        case 0x07:
+          return `Store the current value of the delay timer into register ${formatHex(
+            b,
+            1,
+          )}`;
+        case 0x0a:
+          return `Wait for key press and store it in register ${formatHex(b, 1)}`;
+        case 0x15:
+          return `Set delay timer to value in register ${formatHex(b, 1)}`;
+        case 0x18:
+          return `Set sound timer to value in register ${formatHex(b, 1)}`;
+        case 0x1e:
+          return `Add value in register ${formatHex(b, 1)} to Register I`;
+        case 0x29:
+          return `Set Register I to the memory address of the sprite data corresponding to the hexadecimal digit stored in register ${formatHex(
+            b,
+            1,
+          )}`;
+        case 0x33:
+          return `Store the binary coded decimal equivalent of value in register ${formatHex(
+            b,
+            1,
+          )} to register I, register I+1, and register I+2`;
+        case 0x55:
+          return `Store regsiter 0 to register ${formatHex(
+            b,
+            1,
+          )} to memory starting at location stored in register I.`;
+        case 0x65:
+          return `Retrieve regsiter 0 to register ${formatHex(
+            b,
+            1,
+          )} to memory starting at location stored in register I.`;
+        default:
+          return "Unknown Command";
+      }
+    default:
+      return "Unknown Command";
+  }
+}
+
+/**
+ * This function synchronizes the PC and instruction word from the emulator.
+ * @returns No return value.
+ */
+function syncInstructionState(): void {
+  programCounter.value = emulator.programCounter();
+  instructionWord.value = emulator.currentInstruction();
+}
 
 /**
  * This instance represents the emulator client boundary.
@@ -691,7 +911,7 @@ function loop(timestamp: number): void {
     cpuAccumulatorMs -= cappedCycles / cyclesPerMs;
   }
 
-  programCounter.value = emulator.programCounter();
+  syncInstructionState();
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
 
@@ -713,7 +933,7 @@ function stepOnce(): void {
   }
 
   emulator.tick(1);
-  programCounter.value = emulator.programCounter();
+  syncInstructionState();
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
   renderFrame();
@@ -842,7 +1062,7 @@ function resetEmulator(): void {
   if (pendingRomBytes.value) {
     emulator.loadRom(pendingRomBytes.value);
   }
-  programCounter.value = emulator.programCounter();
+  syncInstructionState();
   soundTimerValue.value = emulator.soundTimer();
   updateSoundState();
   renderFrame();
@@ -860,7 +1080,7 @@ async function initEmulator(): Promise<void> {
     if (pendingRomBytes.value) {
       emulator.loadRom(pendingRomBytes.value);
     }
-    programCounter.value = emulator.programCounter();
+    syncInstructionState();
     soundTimerValue.value = emulator.soundTimer();
     updateSoundState();
     renderFrame();

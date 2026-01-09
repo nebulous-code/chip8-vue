@@ -80,6 +80,12 @@ export interface Chip8Client {
    * @returns The current program counter address.
    */
   programCounter(): number;
+
+  /**
+   * This returns the current instruction word at the program counter.
+   * @returns The current instruction word.
+   */
+  currentInstruction(): number;
 }
 
 /**
@@ -198,6 +204,14 @@ export class StubChip8Client implements Chip8Client {
   public programCounter(): number {
     return this.programCounterValue;
   }
+
+  /**
+   * This returns a stubbed instruction word.
+   * @returns The current instruction word.
+   */
+  public currentInstruction(): number {
+    return 0x0000;
+  }
 }
 
 /**
@@ -208,6 +222,8 @@ export class WasmChip8Client implements Chip8Client {
   private readonly emulator: Chip8Wasm;
   /** This field stores whether the emulator exposes programCounter. */
   private readonly hasProgramCounter: boolean;
+  /** This field stores whether the emulator exposes currentInstruction. */
+  private readonly hasCurrentInstruction: boolean;
 
   /**
    * This constructs a WASM-backed Chip-8 client.
@@ -219,6 +235,9 @@ export class WasmChip8Client implements Chip8Client {
     this.hasProgramCounter =
       typeof (emulator as unknown as { programCounter?: () => number }).programCounter ===
       "function";
+    this.hasCurrentInstruction =
+      typeof (emulator as unknown as { currentInstruction?: () => number })
+        .currentInstruction === "function";
   }
 
   /**
@@ -304,6 +323,17 @@ export class WasmChip8Client implements Chip8Client {
       return 0x200;
     }
     return this.emulator.programCounter();
+  }
+
+  /**
+   * This returns the current instruction word.
+   * @returns The current instruction word.
+   */
+  public currentInstruction(): number {
+    if (!this.hasCurrentInstruction) {
+      return 0x0000;
+    }
+    return this.emulator.currentInstruction();
   }
 }
 
