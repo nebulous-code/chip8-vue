@@ -61,6 +61,14 @@
         </div>
 
         <div class="controls__group">
+          <h2 class="controls__title">Sound</h2>
+          <p class="controls__hint">Toggle audio output for Chip-8 sound.</p>
+          <button type="button" class="button button--ghost" @click="toggleMute">
+            {{ isMuted ? "Unmute" : "Mute" }}
+          </button>
+        </div>
+
+        <div class="controls__group">
           <h2 class="controls__title">Keypad Mapping</h2>
           <p class="controls__hint">Keyboard input maps to the classic CHIP-8 keypad layout.</p>
           <pre class="keypad">
@@ -128,6 +136,11 @@ const romLabel = ref("No ROM loaded");
  * This ref stores the most recent sound timer value.
  */
 const soundTimerValue = ref(0);
+
+/**
+ * This ref stores whether audio output is muted.
+ */
+const isMuted = ref(true);
 
 /**
  * This computed value exposes the current run state.
@@ -202,6 +215,21 @@ let canvasContext: CanvasRenderingContext2D | null = null;
 let imageData: ImageData | null = null;
 
 /**
+ * This value stores the audio context for sound output.
+ */
+let audioContext: AudioContext | null = null;
+
+/**
+ * This value stores the oscillator used for the beep tone.
+ */
+let toneOscillator: OscillatorNode | null = null;
+
+/**
+ * This value stores the gain node for volume control.
+ */
+let toneGain: GainNode | null = null;
+
+/**
  * This value stores the most recent ROM bytes for reloads.
  */
 let pendingRomBytes: Uint8Array | null = null;
@@ -253,6 +281,53 @@ function renderFrame(): void {
 }
 
 /**
+ * This function ensures the audio context is ready for playback.
+ * @returns No return value.
+ */
+function ensureAudioContext(): void {
+  if (!audioContext) {
+    audioContext = new AudioContext();
+    toneGain = audioContext.createGain();
+    toneGain.gain.value = 0;
+    toneGain.connect(audioContext.destination);
+    toneOscillator = audioContext.createOscillator();
+    toneOscillator.type = "square";
+    toneOscillator.frequency.value = 440;
+    toneOscillator.connect(toneGain);
+    toneOscillator.start();
+  }
+
+  if (audioContext.state === "suspended") {
+    void audioContext.resume();
+  }
+}
+
+/**
+ * This function updates the beep volume based on sound state.
+ * @returns No return value.
+ */
+function updateSoundState(): void {
+  if (!toneGain) {
+    return;
+  }
+
+  const shouldPlay = !isMuted.value && isRunning.value && soundTimerValue.value > 0;
+  toneGain.gain.value = shouldPlay ? 0.2 : 0;
+}
+
+/**
+ * This function toggles the mute state for audio output.
+ * @returns No return value.
+ */
+function toggleMute(): void {
+  isMuted.value = !isMuted.value;
+  if (!isMuted.value) {
+    ensureAudioContext();
+  }
+  updateSoundState();
+}
+
+/**
  * This function starts the animation loop.
  * @returns No return value.
  */
@@ -262,7 +337,9 @@ function startLoop(): void {
   }
 
   isRunning.value = true;
+  ensureAudioContext();
   lastFrameMs = performance.now();
+  updateSoundState();
   rafId = window.requestAnimationFrame(loop);
 }
 
@@ -277,6 +354,7 @@ function stopLoop(): void {
 
   isRunning.value = false;
   window.cancelAnimationFrame(rafId);
+  updateSoundState();
 }
 
 /**
@@ -309,6 +387,7 @@ function loop(timestamp: number): void {
   }
 
   soundTimerValue.value = emulator.soundTimer();
+  updateSoundState();
   renderFrame();
 
   rafId = window.requestAnimationFrame(loop);
@@ -400,6 +479,7 @@ function resetEmulator(): void {
     emulator.loadRom(pendingRomBytes);
   }
   soundTimerValue.value = emulator.soundTimer();
+  updateSoundState();
   renderFrame();
 }
 
@@ -415,6 +495,7 @@ async function initEmulator(): Promise<void> {
       emulator.loadRom(pendingRomBytes);
     }
     soundTimerValue.value = emulator.soundTimer();
+    updateSoundState();
     renderFrame();
   } catch (error) {
     console.error("Failed to initialize the WASM emulator.", error);
@@ -439,6 +520,16 @@ onMounted(() => {
  */
 onBeforeUnmount(() => {
   stopLoop();
+  if (toneOscillator) {
+    toneOscillator.stop();
+    toneOscillator.disconnect();
+  }
+  if (toneGain) {
+    toneGain.disconnect();
+  }
+  if (audioContext) {
+    void audioContext.close();
+  }
   window.removeEventListener("keydown", handleKeyDown);
   window.removeEventListener("keyup", handleKeyUp);
 });
