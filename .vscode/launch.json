@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Vite Dev Server",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "internalConsoleOptions": "neverOpen",
+      "serverReadyAction": {
+        "pattern": "Local:\\s+(https?://localhost:\\d+/)",
+        "uriFormat": "%s",
+        "action": "startDebugging",
+        "name": "Vite: Firefox"
+      }
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Vite: Firefox",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}",
+      "reAttach": true
+    }
+  ]
+}
