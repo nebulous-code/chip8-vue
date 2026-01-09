@@ -4,13 +4,20 @@
     <!-- This header provides the title and live status. -->
     <header class="app__header">
       <div class="app__branding">
-        <h1 class="app__title">CHIP-8 Vue</h1>
-        <p class="app__subtitle">Vue scaffolding that consumes a CHIP-8 client API</p>
+        <h1 class="app__title">CHIP-8</h1>
+        <p class="app__subtitle">
+          An oxidized CHIP-8 emulator presented through web assembly by
+          <a
+            class="app__link"
+            href="https://github.com/nebulous-code"
+            target="_blank"
+            rel="noreferrer"
+          >
+            nebulous-code
+          </a>
+        </p>
       </div>
-      <div class="app__status">
-        <span class="app__status-label">Status</span>
-        <strong class="app__status-value">{{ statusLabel }}</strong>
-      </div>
+      <div class="app__monogram" aria-label="nebulous-code initials">NC</div>
     </header>
 
     <!-- This section organizes the screen and control panels. -->
@@ -53,7 +60,7 @@ Z X C V     A 0 B F
       <!-- This panel collects input controls and helper text. -->
       <section class="panel panel--controls">
         <div class="controls__group">
-          <h2 class="controls__title">Controls</h2>
+          <h2 class="controls__title">Control Flow</h2>
           <div class="controls__buttons">
             <button
               type="button"
@@ -89,24 +96,54 @@ Z X C V     A 0 B F
               Available ROMs:
             </button>
             <div class="controls__buttons">
-              <button type="button" class="button" @click="loadPresetRom('CHIP-8 Logo')">
-                CHIP-8 Logo
-              </button>
-              <button type="button" class="button" @click="loadPresetRom('Flags')">
-                Flags
-              </button>
-              <button type="button" class="button" @click="loadPresetRom('Walking Man')">
-                Walking Man
-              </button>
-            </div>
-            <div v-if="showAllRoms" class="controls__buttons">
-              <button type="button" class="button" @click="loadPresetRom('Beep')">
+            <button
+              type="button"
+              class="button button--ghost"
+              :class="{ 'button--active': isActiveRom('CHIP-8 Logo') }"
+              @click="loadPresetRom('CHIP-8 Logo')"
+            >
+              CHIP-8 Logo
+            </button>
+            <button
+              type="button"
+              class="button button--ghost"
+              :class="{ 'button--active': isActiveRom('Flags') }"
+              @click="loadPresetRom('Flags')"
+            >
+              Flags
+            </button>
+            <button
+              type="button"
+              class="button button--ghost"
+              :class="{ 'button--active': isActiveRom('Walking Man') }"
+              @click="loadPresetRom('Walking Man')"
+            >
+              Walking Man
+            </button>
+          </div>
+          <div v-if="showAllRoms" class="controls__buttons">
+              <button
+                type="button"
+                class="button button--ghost"
+                :class="{ 'button--active': isActiveRom('Beep') }"
+                @click="loadPresetRom('Beep')"
+              >
                 Beep
               </button>
-              <button type="button" class="button" @click="loadPresetRom('Quirks')">
+              <button
+                type="button"
+                class="button button--ghost"
+                :class="{ 'button--active': isActiveRom('Quirks') }"
+                @click="loadPresetRom('Quirks')"
+              >
                 Quirks
               </button>
-              <button type="button" class="button" @click="loadPresetRom('Keypad')">
+              <button
+                type="button"
+                class="button button--ghost"
+                :class="{ 'button--active': isActiveRom('Keypad') }"
+                @click="loadPresetRom('Keypad')"
+              >
                 Keypad
               </button>
             </div>
@@ -280,14 +317,11 @@ const quirks = ref<Chip8Quirks>({ ...QUIRK_PRESETS["CHIP-8"] });
  */
 const isMuted = ref(true);
 
-/**
- * This computed value exposes the current run state.
- */
-const statusLabel = computed(() => (isRunning.value ? "Running" : "Stopped"));
-
 const hasRom = computed(() => pendingRomBytes.value !== null);
 
 const showAllRoms = ref(false);
+
+const activeRomLabel = ref<string | null>(null);
 
 /**
  * This computed value exposes the active quirk preset name.
@@ -392,6 +426,15 @@ const pendingRomBytes = ref<Uint8Array | null>(null);
  */
 function toggleRomList(): void {
   showAllRoms.value = !showAllRoms.value;
+}
+
+/**
+ * This function checks whether a preset ROM is currently active.
+ * @param label The preset ROM label.
+ * @returns True if the preset ROM is active.
+ */
+function isActiveRom(label: string): boolean {
+  return activeRomLabel.value === label;
 }
 
 /**
@@ -619,6 +662,7 @@ async function handleRomChange(event: Event): Promise<void> {
   const buffer = await file.arrayBuffer();
 
   stopLoop();
+  activeRomLabel.value = null;
   applyRomBytes(new Uint8Array(buffer), file.name);
 }
 
@@ -640,6 +684,7 @@ async function loadPresetRom(label: string): Promise<void> {
       throw new Error(`Failed to load ROM: ${response.status}`);
     }
     const buffer = await response.arrayBuffer();
+    activeRomLabel.value = label;
     applyRomBytes(new Uint8Array(buffer), label);
   } catch (error) {
     console.error("Failed to load the preset ROM.", error);

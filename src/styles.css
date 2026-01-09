@@ -56,6 +56,15 @@ body {
   gap: 16px;
 }
 
+/* This monogram replaces the status block in the header. */
+.app__monogram {
+  font-family: var(--font-title);
+  font-size: clamp(2.2rem, 3vw, 3.4rem);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
 /* This block styles the brand title and subtitle. */
 .app__title {
   font-family: var(--font-title);
@@ -67,6 +76,19 @@ body {
 .app__subtitle {
   margin: 0;
   color: var(--muted);
+}
+
+/* This link styling matches the neon theme without the default blue. */
+.app__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* This adds a subtle glow on hover for the subtitle link. */
+.app__link:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
 }
 
 /* This block styles the status area. */
@@ -245,23 +267,38 @@ body {
   font-size: 0.9rem;
 }
 
+/* This style ensures quirk toggles use the neon accent. */
+.controls__checkbox input {
+  accent-color: var(--accent);
+}
+
 /* This layout aligns control buttons. */
 .controls__buttons {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
   width: 100%;
 }
 
+/* This ensures buttons can shrink within grid columns. */
+.controls__buttons .button {
+  min-width: 0;
+}
+
 /* This block styles the available ROM section. */
 .roms__section {
-  border: 1px solid var(--accent);
-  border-radius: 14px;
-  padding: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 10px 14px;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* This enforces consistent ROM button columns. */
+.roms__section .controls__buttons {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* This button toggles the ROM list expansion. */
@@ -321,9 +358,16 @@ body {
 
 /* This variant creates a subdued button style. */
 .button--ghost {
-  background: transparent;
+  background: #000000;
   border: 1px solid var(--panel-border);
   color: var(--text);
+}
+
+/* This variant highlights the active ROM selection. */
+.button--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000000;
 }
 
 /* This input styling keeps the file picker aligned with the theme. */
@@ -333,6 +377,41 @@ body {
   border: 1px dashed var(--panel-border);
   background: rgba(0, 0, 0, 0.4);
   color: var(--text);
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+/* This styles the file input button to match the theme. */
+.file-input::file-selector-button {
+  background: #000000;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 600;
+  margin-right: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* This ensures Safari uses the same styling. */
+.file-input::-webkit-file-upload-button {
+  background: #000000;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 600;
+  margin-right: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* This provides hover feedback for the file input button. */
+.file-input::file-selector-button:hover,
+.file-input::-webkit-file-upload-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 255, 0, 0.25);
 }
 
 /* This block styles the keypad mapping table. */
@@ -350,6 +429,18 @@ body {
 /* This rule stacks the columns on small screens. */
 @media (max-width: 900px) {
   .app__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .roms__section .controls__buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .roms__section .controls__buttons {
     grid-template-columns: 1fr;
   }
 }
