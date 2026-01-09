@@ -1,14 +1,14 @@
 /* This section defines the palette and typography for the app. */
 :root {
-  --bg-start: #0b0f1a;
-  --bg-end: #182233;
-  --panel: #141b2b;
-  --panel-border: #2a3550;
+  --bg-start: #000000;
+  --bg-end: #00ff00;
+  --panel: #0a0a0a;
+  --panel-border: rgba(0, 255, 0, 0.3);
   --text: #eef1f5;
   --muted: #a5b1c2;
-  --accent: #1fd4a2;
-  --accent-strong: #f4b740;
-  --screen-off: #0a0d16;
+  --accent: #00ff00;
+  --accent-strong: #00ff00;
+  --screen-off: #000000;
   --font-title: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
   --font-body: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
 }
@@ -25,8 +25,8 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   background:
-    radial-gradient(circle at top left, rgba(31, 212, 162, 0.2), transparent 45%),
-    radial-gradient(circle at 20% 20%, rgba(244, 183, 64, 0.18), transparent 50%),
+    radial-gradient(circle at top left, rgba(0, 255, 0, 0.2), transparent 45%),
+    radial-gradient(circle at 20% 20%, rgba(0, 255, 0, 0.12), transparent 50%),
     linear-gradient(160deg, var(--bg-start), var(--bg-end));
 }
 
@@ -71,7 +71,7 @@ body {
 .app__status {
   padding: 12px 18px;
   border-radius: 14px;
-  background: rgba(20, 27, 43, 0.85);
+  background: rgba(0, 0, 0, 0.85);
   border: 1px solid var(--panel-border);
   display: flex;
   flex-direction: column;
@@ -101,11 +101,11 @@ body {
 
 /* This panel style provides a shared card appearance. */
 .panel {
-  background: rgba(20, 27, 43, 0.95);
+  background: rgba(0, 0, 0, 0.95);
   border: 1px solid var(--panel-border);
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 20px 50px rgba(5, 9, 20, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
 /* This modifier positions the screen panel content. */
@@ -175,7 +175,7 @@ body {
 .button {
   border: none;
   background: var(--accent);
-  color: #08131c;
+  color: #000000;
   padding: 10px 16px;
   border-radius: 999px;
   font-weight: 700;
@@ -193,7 +193,7 @@ body {
 /* This style provides a subtle hover effect. */
 .button:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 25px rgba(31, 212, 162, 0.35);
+  box-shadow: 0 12px 25px rgba(0, 255, 0, 0.35);
 }
 
 /* This variant creates a subdued button style. */
@@ -208,7 +208,7 @@ body {
   padding: 10px;
   border-radius: 12px;
   border: 1px dashed var(--panel-border);
-  background: rgba(10, 13, 22, 0.4);
+  background: rgba(0, 0, 0, 0.4);
   color: var(--text);
 }
 
@@ -217,7 +217,7 @@ body {
   margin: 0;
   padding: 12px 16px;
   border-radius: 12px;
-  background: rgba(10, 13, 22, 0.6);
+  background: rgba(0, 0, 0, 0.6);
   border: 1px solid var(--panel-border);
   color: var(--muted);
   font-family: var(--font-body);

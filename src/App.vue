@@ -51,11 +51,11 @@
 
         <div class="controls__group">
           <h2 class="controls__title">ROM</h2>
-          <p class="controls__hint">Load a .ch8 or .8o file to replace the stub animation.</p>
+          <p class="controls__hint">Load a .ch8 file to replace the stub animation.</p>
           <input
             class="file-input"
             type="file"
-            accept=".ch8,.8o"
+            accept=".ch8"
             @change="handleRomChange"
           />
         </div>
@@ -216,12 +216,11 @@ function renderFrame(): void {
 
   for (let index = 0; index < framebuffer.length; index += 1) {
     const isOn = framebuffer[index] === 1;
-    const color = isOn ? 214 : 12;
     const offset = index * 4;
 
-    target[offset] = color;
-    target[offset + 1] = isOn ? 214 : 17;
-    target[offset + 2] = isOn ? 162 : 29;
+    target[offset] = 0;
+    target[offset + 1] = isOn ? 255 : 0;
+    target[offset + 2] = 0;
     target[offset + 3] = 255;
   }
 
