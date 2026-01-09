@@ -345,10 +345,19 @@ const quirks = ref<Chip8Quirks>({ ...QUIRK_PRESETS["CHIP-8"] });
  */
 const isMuted = ref(true);
 
+/**
+ * This computed value indicates whether a ROM is loaded.
+ */
 const hasRom = computed(() => pendingRomBytes.value !== null);
 
+/**
+ * This ref stores whether the full ROM list is expanded.
+ */
 const showAllRoms = ref(false);
 
+/**
+ * This ref stores the active preset ROM label.
+ */
 const activeRomLabel = ref<string | null>(null);
 
 /**

@@ -7,12 +7,15 @@ import vue from "@vitejs/plugin-vue";
  */
 export default defineConfig({
   plugins: [vue()],
+  // This keeps the file-based WASM package working through symlinks.
   resolve: {
     preserveSymlinks: true,
   },
+  // This avoids pre-bundling the WASM package so it can load correctly.
   optimizeDeps: {
     exclude: ["chip8wasm"],
   },
+  // This allows the dev server to read the generated WASM package path.
   server: {
     fs: {
       allow: [
