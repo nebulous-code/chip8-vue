@@ -329,6 +329,7 @@ async function handleRomChange(event: Event): Promise<void> {
 
   const buffer = await file.arrayBuffer();
 
+  stopLoop();
   pendingRomBytes = new Uint8Array(buffer);
   romLabel.value = file.name;
   resetEmulator();
