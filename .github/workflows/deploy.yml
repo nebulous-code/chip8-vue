@@ -37,7 +37,7 @@ jobs:
       - name: Debug - locate chip8wasm crate
         run: |
           echo "Listing Cargo.toml files:"
-          find chip8/chip8wasm -maxdepth 6 -name Cargo.toml -print
+          find chip-8/chip8wasm -maxdepth 6 -name Cargo.toml -print
           echo "Searching for a package named chip8wasm:"
           grep -R --line-number 'name *= *"chip8wasm"' chip8/chip8wasm || true
 
