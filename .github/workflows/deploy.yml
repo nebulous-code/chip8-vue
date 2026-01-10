@@ -57,11 +57,25 @@ jobs:
         working-directory: chip8/chip8wasm
         run: wasm-pack build --target web --out-dir pkg --out-name chip8wasm
 
-      # 5.5) Ensure the local file dependency path exists for npm ci
+      # 5.5) Detect the app directory (repo root vs ./chip8-vue)
+      - name: Detect app directory
+        id: appdir
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "app_dir=." >> "$GITHUB_OUTPUT"
+          elif [ -f chip8-vue/package-lock.json ]; then
+            echo "app_dir=chip8-vue" >> "$GITHUB_OUTPUT"
+          else
+            echo "No package-lock.json found in expected locations."
+            exit 1
+          fi
+
+      # 5.6) Ensure the local file dependency path exists for npm ci
       - name: Ensure chip8 path for npm
         run: |
-          if [ ! -e chip8 ]; then
-            ln -s ../chip8 chip8
+          APP_DIR="${{ steps.appdir.outputs.app_dir }}"
+          if [ ! -e "${APP_DIR}/chip8" ]; then
+            ln -s ../chip8 "${APP_DIR}/chip8"
           fi
 
       # 6) Set up Node (and cache)
@@ -75,15 +89,17 @@ jobs:
       #    NOTE: npm ci will work here because pkg/ now exists.
       - name: Install (npm ci)
         run: npm ci
+        working-directory: ${{ steps.appdir.outputs.app_dir }}
 
       - name: Build (Vite)
         run: npm run build
+        working-directory: ${{ steps.appdir.outputs.app_dir }}
 
       # 8) Upload dist/ as Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ${{ steps.appdir.outputs.app_dir }}/dist
 
   deploy:
     needs: build
