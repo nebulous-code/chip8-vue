@@ -156,7 +156,11 @@ jobs:
           fi
           echo "package-lock.json readable:"
           node -e "require('./package-lock.json'); console.log('lockfile ok')"
-          npm ci
+          echo "WASM pkg contents:"
+          ls -la chip8/chip8wasm/pkg || true
+          echo "npm config package-lock:"
+          npm config get package-lock
+          npm ci --verbose || (echo "npm ci failed, printing npm debug log:" && ls -t /home/runner/.npm/_logs/*-debug-0.log | head -1 | xargs cat && exit 1)
         working-directory: ${{ env.APP_DIR }}
         env:
           NPM_CONFIG_PACKAGE_LOCK: true
