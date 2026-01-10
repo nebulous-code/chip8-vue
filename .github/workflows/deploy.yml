@@ -75,15 +75,17 @@ jobs:
       #    NOTE: npm ci will work here because pkg/ now exists.
       - name: Install (npm ci)
         run: npm ci
+        working-directory: chip8-vue
 
       - name: Build (Vite)
         run: npm run build
+        working-directory: chip8-vue
 
       # 8) Upload dist/ as Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: chip8-vue/dist
 
   deploy:
     needs: build
