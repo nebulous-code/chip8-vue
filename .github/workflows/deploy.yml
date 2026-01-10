@@ -69,6 +69,23 @@ jobs:
             exit 1
           fi
 
+      # 5.55) Debug the lockfile location and contents
+      - name: Debug package-lock.json
+        run: |
+          echo "APP_DIR=$APP_DIR"
+          echo "Workspace root contents:"
+          ls -la
+          echo "APP_DIR contents:"
+          ls -la "$APP_DIR"
+          echo "APP_DIR package.json:"
+          cat "$APP_DIR/package.json"
+          if [ -f "$APP_DIR/package-lock.json" ]; then
+            echo "APP_DIR package-lock.json header:"
+            head -40 "$APP_DIR/package-lock.json"
+          else
+            echo "APP_DIR package-lock.json missing."
+          fi
+
       # 5.6) Ensure the local file dependency path exists for npm ci
       - name: Ensure chip8 path for npm
         run: |
