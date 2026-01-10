@@ -127,6 +127,18 @@ jobs:
           npm config get userconfig
           echo "npm global config:"
           npm config get globalconfig
+          echo "User npmrc contents:"
+          if [ -f "$HOME/.npmrc" ]; then
+            cat "$HOME/.npmrc"
+          else
+            echo "No user .npmrc found."
+          fi
+          echo "Global npmrc contents:"
+          if [ -f "$(npm config get globalconfig)" ]; then
+            cat "$(npm config get globalconfig)"
+          else
+            echo "No global .npmrc found."
+          fi
           echo "npm config list:"
           npm config list
 
@@ -142,10 +154,13 @@ jobs:
           else
             echo "package-lock.json missing at npm ci time."
           fi
+          echo "package-lock.json readable:"
+          node -e "require('./package-lock.json'); console.log('lockfile ok')"
           npm ci
         working-directory: ${{ env.APP_DIR }}
         env:
           NPM_CONFIG_PACKAGE_LOCK: true
+          NPM_CONFIG_USERCONFIG: /dev/null
 
       - name: Build (Vite)
         run: npm run build
