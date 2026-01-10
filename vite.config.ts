@@ -7,6 +7,7 @@ import vue from "@vitejs/plugin-vue";
  */
 export default defineConfig({
   plugins: [vue()],
+  base: "/chip8-vue/",
   // This keeps the file-based WASM package working through symlinks.
   resolve: {
     preserveSymlinks: true,
