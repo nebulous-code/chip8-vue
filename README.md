@@ -3,7 +3,10 @@
 Chip-8 Vue is a web interface for running classic CHIP-8 ROMs in the browser.
 It focuses on a clean screen, simple controls, and quick ROM loading.
 
-## How the App Works (Non-Technical)
+See the demo:
+https://nebulous-code.github.io/chip8-vue/
+
+## How the App Works
 
 - The screen shows the CHIP-8 display output.
 - The ROM section lets users pick a built-in demo or upload a `.ch8` ROM file.
