@@ -116,6 +116,13 @@ jobs:
           node-version: 20
           cache: npm
 
+      # 6.25) Pin npm to avoid npm 10 lockfile issues in CI
+      - name: Pin npm version
+        run: |
+          npm install -g npm@9.9.4
+          echo "Pinned npm version:"
+          npm --version
+
       # 6.5) Debug Node and npm versions plus config
       - name: Debug Node and npm
         run: |
