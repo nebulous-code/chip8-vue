@@ -47,7 +47,7 @@ jobs:
       # 5) Build the wasm package into pkg/
       #    Adjust working-directory if your Cargo.toml is not at repo root.
       - name: Build chip8wasm (wasm-pack)
-        working-directory: chip-8/chip8wasm/crates/chip8wasm
+        working-directory: chip-8/chip8wasm/chip8/chip8wasm
         run: wasm-pack build --target bundler --out-dir pkg --out-name chip8wasm
 
       # 6) Set up Node (and cache)
