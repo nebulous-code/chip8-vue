@@ -59,12 +59,11 @@ jobs:
 
       # 5.5) Detect the app directory (repo root vs ./chip8-vue)
       - name: Detect app directory
-        id: appdir
         run: |
           if [ -f package-lock.json ]; then
-            echo "app_dir=." >> "$GITHUB_OUTPUT"
+            echo "APP_DIR=." >> "$GITHUB_ENV"
           elif [ -f chip8-vue/package-lock.json ]; then
-            echo "app_dir=chip8-vue" >> "$GITHUB_OUTPUT"
+            echo "APP_DIR=chip8-vue" >> "$GITHUB_ENV"
           else
             echo "No package-lock.json found in expected locations."
             exit 1
@@ -73,7 +72,6 @@ jobs:
       # 5.6) Ensure the local file dependency path exists for npm ci
       - name: Ensure chip8 path for npm
         run: |
-          APP_DIR="${{ steps.appdir.outputs.app_dir }}"
           if [ ! -e "${APP_DIR}/chip8" ]; then
             ln -s ../chip8 "${APP_DIR}/chip8"
           fi
@@ -89,17 +87,17 @@ jobs:
       #    NOTE: npm ci will work here because pkg/ now exists.
       - name: Install (npm ci)
         run: npm ci
-        working-directory: ${{ steps.appdir.outputs.app_dir }}
+        working-directory: ${{ env.APP_DIR }}
 
       - name: Build (Vite)
         run: npm run build
-        working-directory: ${{ steps.appdir.outputs.app_dir }}
+        working-directory: ${{ env.APP_DIR }}
 
       # 8) Upload dist/ as Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.appdir.outputs.app_dir }}/dist
+          path: ${{ env.APP_DIR }}/dist
 
   deploy:
     needs: build
