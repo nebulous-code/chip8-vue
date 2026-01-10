@@ -30,7 +30,7 @@ jobs:
         with:
           repository: nebulous-code/chip8   # <-- CHANGE THIS
           ref: main                         # <-- CHANGE if needed (main/master/etc)
-          path: chip8/chip8wasm
+          path: chip-8/chip8wasm
           # If the other repo is private, you will need a PAT:
           # token: ${{ secrets.CHIP8WASM_PAT }}
 
@@ -47,7 +47,7 @@ jobs:
       # 5) Build the wasm package into pkg/
       #    Adjust working-directory if your Cargo.toml is not at repo root.
       - name: Build chip8wasm (wasm-pack)
-        working-directory: chip8/chip8wasm/crates/chip8wasm
+        working-directory: chip-8/chip8wasm/crates/chip8wasm
         run: wasm-pack build --target bundler --out-dir pkg --out-name chip8wasm
 
       # 6) Set up Node (and cache)
