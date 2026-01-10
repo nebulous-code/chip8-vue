@@ -116,10 +116,10 @@ jobs:
           node-version: 20
           cache: npm
 
-      # 6.25) Pin npm to avoid npm 10 lockfile issues in CI
+      # 6.25) Pin npm to avoid arborist issues with local file dependencies
       - name: Pin npm version
         run: |
-          npm install -g npm@9.9.4
+          npm install -g npm@8.19.4
           echo "Pinned npm version:"
           npm --version
 
