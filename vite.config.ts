@@ -23,7 +23,7 @@ export default defineConfig({
     fs: {
       allow: [
         path.resolve(__dirname),
-        path.resolve(__dirname, "../chip8/chip8wasm/pkg"),
+        path.resolve(__dirname, "./chip8/chip8wasm/pkg"),
       ],
     },
   },

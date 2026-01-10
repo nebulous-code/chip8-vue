@@ -25,12 +25,12 @@ jobs:
       # 2) Checkout the repo that contains your Rust WASM crate
       #    IMPORTANT: replace <OWNER>/<REPO> and ref as needed.
       #    This checks it out into ./chip8/chip8wasm so your file: dependency path works.
-      - name: Checkout chip8wasm repo
+      - name: Checkout chip-8 repo
         uses: actions/checkout@v5
         with:
           repository: nebulous-code/chip-8
           ref: master
-          path: chip-8/chip8wasm
+          path: chip8
           # If the other repo is private, you will need a PAT:
           # token: ${{ secrets.CHIP8WASM_PAT }}
       # 2.5) Locate the chip8 wasm crate
