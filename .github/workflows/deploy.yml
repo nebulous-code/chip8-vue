@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: nebulous-code/chip-8
-          ref: main                         # <-- CHANGE if needed (main/master/etc)
+          ref: master
           path: chip-8/chip8wasm
           # If the other repo is private, you will need a PAT:
           # token: ${{ secrets.CHIP8WASM_PAT }}
