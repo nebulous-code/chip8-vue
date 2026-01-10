@@ -150,24 +150,22 @@ jobs:
           npm config list
 
       # 7) Install deps and build Vue app
-      #    NOTE: npm ci will work here because pkg/ now exists.
-      - name: Install (npm ci)
+      #    NOTE: npm ci has been unstable with local file: dependencies in CI.
+      - name: Install (npm install)
         run: |
-          echo "npm ci working directory:"
+          echo "npm install working directory:"
           pwd
           ls -la
           if [ -f package-lock.json ]; then
             echo "package-lock.json found."
           else
-            echo "package-lock.json missing at npm ci time."
+            echo "package-lock.json missing at npm install time."
           fi
           echo "package-lock.json readable:"
           node -e "require('./package-lock.json'); console.log('lockfile ok')"
           echo "WASM pkg contents:"
           ls -la chip8/chip8wasm/pkg || true
-          echo "npm config package-lock:"
-          npm config get package-lock
-          npm ci --verbose || (echo "npm ci failed, printing npm debug log:" && ls -t /home/runner/.npm/_logs/*-debug-0.log | head -1 | xargs cat && exit 1)
+          npm install --no-audit --no-fund
         working-directory: ${{ env.APP_DIR }}
         env:
           NPM_CONFIG_PACKAGE_LOCK: true
