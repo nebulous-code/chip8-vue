@@ -33,6 +33,13 @@ jobs:
           path: chip-8/chip8wasm
           # If the other repo is private, you will need a PAT:
           # token: ${{ secrets.CHIP8WASM_PAT }}
+      # 2.5) Locate the chip8 wasm crate
+      - name: Debug - locate chip8wasm crate
+        run: |
+          echo "Listing Cargo.toml files:"
+          find chip8/chip8wasm -maxdepth 6 -name Cargo.toml -print
+          echo "Searching for a package named chip8wasm:"
+          grep -R --line-number 'name *= *"chip8wasm"' chip8/chip8wasm || true
 
       # 3) Install Rust + wasm target
       - name: Set up Rust
