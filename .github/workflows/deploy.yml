@@ -113,13 +113,36 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          node-version: 20
           cache: npm
+
+      # 6.5) Debug Node and npm versions plus config
+      - name: Debug Node and npm
+        run: |
+          echo "Node version:"
+          node --version
+          echo "npm version:"
+          npm --version
+          echo "npm user config:"
+          npm config get userconfig
+          echo "npm global config:"
+          npm config get globalconfig
+          echo "npm config list:"
+          npm config list
 
       # 7) Install deps and build Vue app
       #    NOTE: npm ci will work here because pkg/ now exists.
       - name: Install (npm ci)
-        run: npm ci
+        run: |
+          echo "npm ci working directory:"
+          pwd
+          ls -la
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json found."
+          else
+            echo "package-lock.json missing at npm ci time."
+          fi
+          npm ci
         working-directory: ${{ env.APP_DIR }}
         env:
           NPM_CONFIG_PACKAGE_LOCK: true
