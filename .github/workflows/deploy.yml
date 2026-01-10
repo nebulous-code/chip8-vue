@@ -28,7 +28,7 @@ jobs:
       - name: Checkout chip8wasm repo
         uses: actions/checkout@v5
         with:
-          repository: nebulous-code/chip8   # <-- CHANGE THIS
+          repository: nebulous-code/chip-8
           ref: main                         # <-- CHANGE if needed (main/master/etc)
           path: chip-8/chip8wasm
           # If the other repo is private, you will need a PAT:
