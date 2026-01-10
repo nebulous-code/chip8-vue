@@ -1,4 +1,4 @@
-name: Deploy static content to Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -15,32 +15,67 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # 1) Checkout chip8-vue repo
+      - name: Checkout chip8-vue
         uses: actions/checkout@v5
 
+      # 2) Checkout the repo that contains your Rust WASM crate
+      #    IMPORTANT: replace <OWNER>/<REPO> and ref as needed.
+      #    This checks it out into ./chip8/chip8wasm so your file: dependency path works.
+      - name: Checkout chip8wasm repo
+        uses: actions/checkout@v5
+        with:
+          repository: nebulous-code/chip8   # <-- CHANGE THIS
+          ref: main                         # <-- CHANGE if needed (main/master/etc)
+          path: chip8/chip8wasm
+          # If the other repo is private, you will need a PAT:
+          # token: ${{ secrets.CHIP8WASM_PAT }}
+
+      # 3) Install Rust + wasm target
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      # 4) Install wasm-pack
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+
+      # 5) Build the wasm package into pkg/
+      #    Adjust working-directory if your Cargo.toml is not at repo root.
+      - name: Build chip8wasm (wasm-pack)
+        working-directory: chip8/chip8wasm/crates/chip8wasm
+        run: wasm-pack build --target bundler --out-dir pkg --out-name chip8wasm
+
+      # 6) Set up Node (and cache)
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: npm
 
-      - name: Install dependencies
+      # 7) Install deps and build Vue app
+      #    NOTE: npm ci will work here because pkg/ now exists.
+      - name: Install (npm ci)
         run: npm ci
 
-      - name: Build
+      - name: Build (Vite)
         run: npm run build
 
-      - name: Upload artifact
+      # 8) Upload dist/ as Pages artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4

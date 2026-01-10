@@ -1,7 +1,7 @@
 /* This module defines the boundary for a Chip-8 client implementation. */
 
-import initWasm, { Chip8Wasm } from "chip8wasm";
-import wasmUrl from "chip8wasm/chip8wasm_bg.wasm?url";
+import { Chip8Wasm } from "chip8wasm";
+
 
 /**
  * This type stores the 16-key input state as a bitmask.
@@ -343,18 +343,20 @@ let wasmInitPromise: Promise<void> | null = null;
  * This function initializes the WASM module once.
  * @returns A promise that resolves when the module is ready.
  */
+/*
 async function initWasmOnce(): Promise<void> {
   if (!wasmInitPromise) {
     wasmInitPromise = initWasm(wasmUrl).then(() => undefined);
   }
   await wasmInitPromise;
 }
+*/
 
 /**
  * This function creates a WASM-backed Chip-8 client.
  * @returns A promise that resolves to the Chip-8 client.
  */
 export async function createWasmClient(): Promise<Chip8Client> {
-  await initWasmOnce();
+  // await initWasmOnce();
   return new WasmChip8Client(new Chip8Wasm());
 }
