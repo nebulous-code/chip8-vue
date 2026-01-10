@@ -23,7 +23,10 @@ export default defineConfig({
     fs: {
       allow: [
         path.resolve(__dirname),
+        // This supports the repo layout used in GitHub Actions.
         path.resolve(__dirname, "./chip8/chip8wasm/pkg"),
+        // This supports the local monorepo layout with chip8 as a sibling.
+        path.resolve(__dirname, "../chip8/chip8wasm/pkg"),
       ],
     },
   },

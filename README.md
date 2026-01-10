@@ -28,6 +28,14 @@ The Vue client talks to that package through a small TypeScript wrapper.
 - `chip8-vue/src/wasm/chip8Client.ts` is the TypeScript wrapper and interface.
 - `chip8-vue/src/App.vue` is the UI that calls the wrapper.
 
+### Repo Layout Differences (Local vs GitHub Actions)
+
+- Local development expects the Rust repo to be a sibling folder:
+  `../chip8/chip8wasm/pkg`
+- GitHub Actions checks out the Rust repo inside the Vue project:
+  `./chip8/chip8wasm/pkg`
+- `vite.config.ts` allows both paths so the same build works locally and in CI.
+
 ### Rebuilding the WASM Package
 
 1) Build the WASM package from the Rust workspace:

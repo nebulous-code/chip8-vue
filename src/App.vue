@@ -280,15 +280,20 @@ const TARGET_FPS = 60;
 const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
 
 /**
+ * This constant defines the base URL for static assets.
+ */
+const ASSET_BASE_URL = import.meta.env.BASE_URL;
+
+/**
  * This constant maps preset ROM labels to their file paths.
  */
 const ROM_PRESETS: Record<string, string> = {
-  "CHIP-8 Logo": "/roms/1-chip8-logo.ch8",
-  "Flag Tests": "/roms/4-flags.ch8",
-  "Walking Man": "/roms/walking_man.ch8",
-  Beep: "/roms/7-beep.ch8",
-  Quirks: "/roms/5-quirks.ch8",
-  Keypad: "/roms/6-keypad.ch8",
+  "CHIP-8 Logo": "roms/1-chip8-logo.ch8",
+  "Flag Tests": "roms/4-flags.ch8",
+  "Walking Man": "roms/walking_man.ch8",
+  Beep: "roms/7-beep.ch8",
+  Quirks: "roms/5-quirks.ch8",
+  Keypad: "roms/6-keypad.ch8",
 };
 
 /**
@@ -981,7 +986,7 @@ async function loadPresetRom(label: string): Promise<void> {
 
   stopLoop();
   try {
-    const response = await fetch(path);
+    const response = await fetch(`${ASSET_BASE_URL}${path}`);
     if (!response.ok) {
       throw new Error(`Failed to load ROM: ${response.status}`);
     }
