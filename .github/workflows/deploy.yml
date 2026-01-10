@@ -57,6 +57,13 @@ jobs:
         working-directory: chip8/chip8wasm
         run: wasm-pack build --target web --out-dir pkg --out-name chip8wasm
 
+      # 5.5) Ensure the local file dependency path exists for npm ci
+      - name: Ensure chip8 path for npm
+        run: |
+          if [ ! -e chip8 ]; then
+            ln -s ../chip8 chip8
+          fi
+
       # 6) Set up Node (and cache)
       - name: Set up Node
         uses: actions/setup-node@v6
