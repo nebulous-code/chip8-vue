@@ -1,23 +1,85 @@
-# Chip-8 Vue
+# CHIP-8 Vue
 
-Chip-8 Vue is a web interface for running classic CHIP-8 ROMs in the browser.
-It focuses on a clean screen, simple controls, and quick ROM loading.
+CHIP-8 Vue is a web app for playing CHIP-8 ROMs in the browser. It focuses on
+a clean screen, simple controls, and quick ROM loading.
 
-See the demo:
+## Live demo
 https://nebulous-code.github.io/chip8-vue/
 
-## How the App Works
+## Showcase
 
-- The screen shows the CHIP-8 display output.
-- The ROM section lets users pick a built-in demo or upload a `.ch8` ROM file.
-- Start/Pause runs or pauses the emulator; Reset reloads the current ROM.
-- The Sound section shows whether the emulator is beeping and lets users mute it.
-- The Quirks section toggles small compatibility settings for different CHIP-8 variants.
-- Step mode runs one instruction at a time and shows the current instruction text. It is available by expanding the control section
+![landing](assets/screenshots/CHIP-8_vue_landing.png)
+Special thanks to [Timendus' CHIP-8 Test Suite](https://github.com/Timendus/chip8-test-suite)
 
-## Rust CHIP-8 Library by nebulous-code
+![control_flow](assets/screenshots/CHIP-8_vue_control_flow.png)
+Manage the program counter manually and see a description about the next command.
 
-- https://github.com/nebulous-code/chip-8
+![sound_and_quirks](assets/screenshots/CHIP-8_vue_sound_and_quirks.png)
+Configure quirks and mute the CHIP-8
+
+![no_wrap](assets/screenshots/CHIP-8_vue_no_wrap.png)
+Sprite wrapping is configurable with the quirk setting.
+
+![wrapping_quirk](assets/screenshots/CHIP-8_vue_wrapping_quirk.png)
+Sprite wrapping enabled with the quirk.
+
+## Using the App
+
+### ROMs
+
+- Available ROMs are listed at the top of the ROMs section.
+- Click a ROM button to load it.
+- To load a local ROM, use the upload button and select a `.ch8` file.
+- When a ROM is loaded, the app highlights the active ROM source.
+
+### Control Flow
+
+- Start begins running the ROM.
+- Pause stops execution without clearing the screen.
+- Reset restarts the current ROM from the beginning.
+- Step runs a single instruction at a time (available when paused).
+- When the Control Flow section is expanded, the app shows:
+  - Program Counter (PC)
+  - Current instruction (INSR)
+  - Instruction description
+
+### Sound
+
+- The Sound line shows `Beep` or `Silent` based on the CHIP-8 sound timer.
+- Use the mute toggle to disable audio output.
+
+### Quirks
+
+Quirks adjust small compatibility behaviors used by different CHIP-8 variants.
+
+- The Quirks section includes a preset selector.
+  - Some advanced CHIP-8 variants do not have necessary quirks enabled.
+- Changing a quirk does not affect the current ROM until Reset is pressed.
+
+### Keypad Mapping
+
+CHIP-8 uses a 4x4 keypad. This app maps it to the first 16 keys on a QWERTY
+keyboard:
+
+| CHIP-8 | Keyboard |
+| --- | --- |
+| 1 2 3 C | 1 2 3 4 |
+| 4 5 6 D | Q W E R |
+| 7 8 9 E | A S D F |
+| A 0 B F | Z X C V |
+
+### About CHIP-8
+
+The About section includes a short overview of what CHIP-8 is and why it
+exists. Use it for quick context if the system is new.
+
+## CHIP-8 Library
+
+This app is powered by the Rust CHIP-8 emulator by nebulous-code.
+
+- Repo: https://github.com/nebulous-code/chip-8
+- chip8sys crate (v0.1.0): https://crates.io/crates/chip8sys
+- chip8wasm crate (v0.1.0): https://crates.io/crates/chip8wasm
 
 ## Advanced: Updating the App and WASM Integration
 
