@@ -8,7 +8,7 @@ https://nebulous-code.github.io/chip8-vue/
 
 ## Showcase
 
-![landing](assets/screenshots/CHIP-8_vue_landing.png)
+![landing](./assets/screenshots/CHIP-8_vue_landing.png)
 Special thanks to [Timendus' CHIP-8 Test Suite](https://github.com/Timendus/chip8-test-suite)
 
 ![control_flow](assets/screenshots/CHIP-8_vue_control_flow.png)
